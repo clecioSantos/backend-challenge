@@ -1,0 +1,86 @@
+name: wagering-processor
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: wagering-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DATABASE_USER:-wagering}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-wagering}
+      POSTGRES_DB: ${DATABASE_NAME:-wagering}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "${DATABASE_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER:-wagering} -d ${DATABASE_NAME:-wagering}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    command:
+      - "postgres"
+      - "-c"
+      - "max_connections=200"
+      - "-c"
+      - "log_min_duration_statement=500"
+
+  localstack:
+    image: localstack/localstack:3.8
+    container_name: wagering-localstack
+    restart: unless-stopped
+    environment:
+      SERVICES: sqs
+      DEBUG: "0"
+      PERSISTENCE: "0"
+      AWS_DEFAULT_REGION: ${AWS_REGION:-us-east-1}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-test}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-test}
+      DOCKER_HOST: unix:///var/run/docker.sock
+    ports:
+      - "4566:4566"
+    volumes:
+      - localstack-data:/var/lib/localstack
+      - ./docker/localstack/init/ready.d:/etc/localstack/init/ready.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:4566/_localstack/health || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 15s
+
+  app:
+    profiles: ["app"]
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: wagering-processor:latest
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      HTTP_PORT: 3000
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_USER: ${DATABASE_USER:-wagering}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-wagering}
+      DATABASE_NAME: ${DATABASE_NAME:-wagering}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-test}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-test}
+      AWS_ENDPOINT: http://localstack:4566
+      SQS_QUEUE_URL: http://localstack:4566/000000000000/wager-transactions.fifo
+      SQS_DLQ_URL: http://localstack:4566/000000000000/wager-transactions-dlq.fifo
+    ports:
+      - "3000:3000"
+    command: ["bun", "run", "src/main.ts"]
+
+volumes:
+  postgres-data:
+  localstack-data:

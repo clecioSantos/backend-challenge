@@ -1,0 +1,7 @@
+[test]
+preload = ["./test/setup.ts"]
+coverage = false
+timeout = 60000
+
+[install]
+exact = false

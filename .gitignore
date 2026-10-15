@@ -1,0 +1,31 @@
+# dependencies
+node_modules/
+.bun/
+
+# build output
+dist/
+*.tsbuildinfo
+
+# env
+.env
+.env.local
+.env.*.local
+
+# logs
+logs/
+*.log
+npm-debug.log*
+bun-debug.log*
+
+# coverage / test artifacts
+coverage/
+.bun-test/
+
+# os
+.DS_Store
+Thumbs.db
+
+# editors
+.idea/
+.vscode/*
+!.vscode/extensions.json
