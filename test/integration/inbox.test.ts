@@ -78,8 +78,8 @@ describe('persistent inbox', () => {
     const fulfilled = results.filter((result) => result.status === 'fulfilled');
     const rejected = results.filter((result) => result.status === 'rejected');
 
-    // At least the winner succeeds; a concurrent loser either replays or is told
-    // to retry (never silently drops).
+    // Pelo menos o vencedor tem sucesso; um perdedor concorrente ou faz replay ou é instruído
+    // a fazer retry (nunca é descartado silenciosamente).
     expect(fulfilled.length).toBeGreaterThanOrEqual(1);
     for (const failure of rejected) {
       expect((failure as PromiseRejectedResult).reason).toBeInstanceOf(InfrastructureError);
@@ -101,7 +101,7 @@ describe('persistent inbox', () => {
     const inbox = await h.orm.em.getConnection().execute<{ count: string }[]>(
       `select count(*)::text as count from "inbox_messages" where "message_id" = 'msg-invalid'`,
     );
-    // The claim rolled back with the failed transaction.
+    // O claim sofreu rollback junto com a transação que falhou.
     expect(inbox[0]!.count).toBe('0');
     expect(await debitCount(walletId)).toBe('0');
   });

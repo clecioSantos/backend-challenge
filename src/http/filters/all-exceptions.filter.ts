@@ -20,11 +20,11 @@ interface ErrorBody {
 }
 
 /**
- * Maps domain and infrastructure failures to HTTP status codes.
+ * Mapeia falhas de domínio e de infraestrutura para códigos de status HTTP.
  *
- * The mapping is deliberate: a provider must be able to tell a fixable payload
- * apart from a terminal business rejection, an idempotency conflict and a
- * transient outage — without parsing the message.
+ * O mapeamento é intencional: um provider precisa conseguir distinguir um payload
+ * corrigível de uma rejeição de negócio terminal, de um conflito de idempotência e de
+ * uma indisponibilidade transitória — sem parsear a mensagem.
  */
 const DOMAIN_STATUS: Record<string, HttpStatus> = {
   INVALID_MONEY: HttpStatus.BAD_REQUEST,

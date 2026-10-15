@@ -2,12 +2,13 @@ import { SendMessageCommand, type SQSClient } from '@aws-sdk/client-sqs';
 import type { MessagePublisher, PublishableMessage } from '../../application/ports/message-publisher.port';
 
 /**
- * Publishes integration events to the FIFO queue.
+ * Publica eventos de integração na queue FIFO.
  *
- * `aggregateId` is used as the message group id, which keeps all events for a
- * wallet/transaction ordered while still allowing different aggregates to be
- * processed in parallel. The event id doubles as the broker deduplication id:
- * a producer retry of the same outbox row cannot enqueue the message twice.
+ * `aggregateId` é usado como message group id, o que mantém todos os eventos de
+ * uma wallet/transação ordenados, ao mesmo tempo que permite que aggregates
+ * diferentes sejam processados em paralelo. O event id também serve como id de
+ * deduplicação do broker: um retry do produtor da mesma linha do outbox não
+ * consegue enfileirar a mensagem duas vezes.
  */
 export class SqsMessagePublisher implements MessagePublisher {
   constructor(

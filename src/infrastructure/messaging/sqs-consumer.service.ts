@@ -27,20 +27,21 @@ import {
 const TRANSIENT_BACKOFF = { baseMs: 2_000, maxMs: 300_000 };
 
 /**
- * SQS consumer for `wager-transactions.fifo`.
+ * Consumidor SQS para `wager-transactions.fifo`.
  *
- * Guarantees:
- *  - the message is only deleted after the business transaction committed;
- *  - deduplication is delegated to the persistent inbox keyed by
- *    `(consumerName, messageId)`, so a redelivered message never applies twice;
- *  - invalid payloads and business/validation rejections are terminally routed
- *    to the DLQ, transient failures are retried with exponential backoff through
- *    `ChangeMessageVisibility`, and the broker redrive policy is the last
- *    resort.
+ * Garantias:
+ *  - a mensagem só é excluída após o commit da transação de negócio;
+ *  - a deduplicação é delegada ao inbox persistente indexado por
+ *    `(consumerName, messageId)`, então uma mensagem reentregue nunca é
+ *    aplicada duas vezes;
+ *  - payloads inválidos e rejeições de negócio/validação são encaminhados
+ *    terminalmente para a DLQ, falhas transitórias são reprocessadas com
+ *    backoff exponencial via `ChangeMessageVisibility`, e a redrive policy do
+ *    broker é o último recurso.
  *
- * On `SIGTERM` (`OnModuleDestroy`) the loop stops accepting new messages and
- * waits for the in-flight one; unacknowledged messages return to the queue when
- * their visibility expires.
+ * Em `SIGTERM` (`OnModuleDestroy`) o loop para de aceitar novas mensagens e
+ * aguarda a que está em andamento; mensagens não confirmadas retornam para a
+ * queue quando sua visibility expira.
  */
 @Injectable()
 export class SqsConsumerService implements OnModuleInit, OnModuleDestroy {
@@ -86,7 +87,7 @@ export class SqsConsumerService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  /** Receives and processes a single batch of messages. Exposed for testing. */
+  /** Recebe e processa um único lote de mensagens. Exposto para testes. */
   async poll(): Promise<void> {
     const response = await this.client.send(
       new ReceiveMessageCommand({
@@ -99,8 +100,8 @@ export class SqsConsumerService implements OnModuleInit, OnModuleDestroy {
       }),
     );
 
-    // A batch that was already fetched is processed to completion even if a
-    // shutdown was requested concurrently: it is in flight, not new work.
+    // Um lote que já foi buscado é processado até o fim mesmo se um shutdown
+    // foi solicitado em paralelo: ele está em andamento, não é trabalho novo.
     for (const message of response.Messages ?? []) {
       await this.handleMessage(message);
     }
@@ -158,8 +159,9 @@ export class SqsConsumerService implements OnModuleInit, OnModuleDestroy {
       return;
     }
 
-    // Transient failure: hide the message for a backoff window before the broker
-    // makes it visible again. Receive count keeps increasing across attempts.
+    // Falha transitória: oculta a mensagem por uma janela de backoff antes que o
+    // broker a torne visível novamente. O receive count continua aumentando a
+    // cada tentativa.
     const delayMs = computeBackoffDelay(receiveCount, TRANSIENT_BACKOFF);
     this.metrics.recordRetry('sqs');
     this.logger.warn({ ...context, receiveCount, delayMs, err: error }, 'Transient failure; scheduling retry');
@@ -211,8 +213,8 @@ export class SqsConsumerService implements OnModuleInit, OnModuleDestroy {
       this.metrics.recordDeadLetter('sqs');
       await this.ack(message);
     } catch (error) {
-      // If the DLQ write fails, keep the message so the redrive policy still
-      // has a chance to move it instead of silently dropping it.
+      // Se a escrita na DLQ falhar, mantém a mensagem para que a redrive policy
+      // ainda tenha a chance de movê-la em vez de descartá-la silenciosamente.
       this.logger.error({ err: error }, 'Failed to route message to DLQ');
     }
   }

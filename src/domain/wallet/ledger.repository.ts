@@ -2,7 +2,7 @@ import type { Money } from '../shared/money';
 import type { WalletLedgerEntry } from './wallet-ledger-entry';
 
 export interface LedgerFindOptions {
-  /** Opaque, stable cursor. Encodes `(createdAt, id)` of the last seen row. */
+  /** Cursor opaco e estável. Codifica `(createdAt, id)` da última linha vista. */
   cursor?: string;
   limit: number;
 }
@@ -19,7 +19,7 @@ export interface LedgerRepository {
 
   findByTransactionId(transactionId: string): Promise<WalletLedgerEntry[]>;
 
-  /** Net balance derived purely from ledger entries (credits - debits). */
+  /** Saldo líquido derivado puramente dos lançamentos do ledger (créditos - débitos). */
   sumForWallet(walletId: string, currency: string): Promise<Money>;
 
   countForWallet(walletId: string): Promise<number>;

@@ -1,29 +1,31 @@
 /**
- * Stable, machine-readable failure taxonomy carried by every rejected or
- * failed wager transaction.
+ * Taxonomia de falhas estável e legível por máquina, carregada por toda wager
+ * transaction rejeitada ou que falhou.
  *
- * The codes are intentionally grouped by the action the provider should take:
+ * Os códigos são intencionalmente agrupados pela ação que o provider deve
+ * tomar:
  *
- *  - `RETRYABLE_*`   -> the provider may resend the very same operation later.
- *  - `PAYLOAD_*`     -> the provider must fix the payload before resending.
- *  - `BUSINESS_*`    -> the operation is impossible given the domain state;
- *                       resending unchanged will never succeed.
- *  - `TERMINAL_*`    -> the operation is permanently impossible for this key.
+ *  - `RETRYABLE_*`   -> o provider pode reenviar a mesma operação mais tarde.
+ *  - `PAYLOAD_*`     -> o provider deve corrigir o payload antes de reenviar.
+ *  - `BUSINESS_*`    -> a operação é impossível dado o estado do domínio;
+ *                       reenviar sem alterações nunca terá sucesso.
+ *  - `TERMINAL_*`    -> a operação é permanentemente impossível para esta chave.
  *
- * The grouping is documented rather than encoded in the enum name so the wire
- * value stays stable even if the operational guidance is reclassified.
+ * O agrupamento é documentado em vez de codificado no nome do enum, para que
+ * o valor transmitido permaneça estável mesmo que a orientação operacional
+ * seja reclassificada.
  */
 export enum FailureCode {
-  // -- wallet resolution ----------------------------------------------------
+  // -- resolução de wallet --------------------------------------------------
   WalletNotFound = 'WALLET_NOT_FOUND',
   WalletPlayerMismatch = 'WALLET_PLAYER_MISMATCH',
   WalletCurrencyMismatch = 'WALLET_CURRENCY_MISMATCH',
 
-  // -- balance rules --------------------------------------------------------
+  // -- regras de saldo ------------------------------------------------------
   InsufficientFunds = 'INSUFFICIENT_FUNDS',
   ReversalWouldGoNegative = 'REVERSAL_WOULD_GO_NEGATIVE',
 
-  // -- reference resolution -------------------------------------------------
+  // -- resolução de referência ----------------------------------------------
   ReferenceRequired = 'REFERENCE_REQUIRED',
   ReferenceNotFound = 'REFERENCE_NOT_FOUND',
   ReferenceNotProcessed = 'REFERENCE_NOT_PROCESSED',
@@ -32,19 +34,19 @@ export enum FailureCode {
   ReferenceAmountMismatch = 'REFERENCE_AMOUNT_MISMATCH',
   ReferenceAlreadyReversed = 'REFERENCE_ALREADY_REVERSED',
 
-  // -- request validation ---------------------------------------------------
+  // -- validação de requisição ----------------------------------------------
   InvalidTransactionKind = 'INVALID_TRANSACTION_KIND',
   InvalidAmount = 'INVALID_AMOUNT',
   IdempotencyConflict = 'IDEMPOTENCY_KEY_PAYLOAD_CONFLICT',
 
-  // -- infrastructure -------------------------------------------------------
+  // -- infraestrutura -------------------------------------------------------
   InternalError = 'INTERNAL_ERROR',
 }
 
 /**
- * Operational guidance attached to a failure code. The value is exposed so a
- * provider can decide whether to resend, fix the payload or give up without
- * parsing human-readable messages.
+ * Orientação operacional associada a um código de falha. O valor é exposto
+ * para que um provider possa decidir entre reenviar, corrigir o payload ou
+ * desistir, sem interpretar mensagens legíveis por humanos.
  */
 export type FailureDisposition = 'resend' | 'fix_payload' | 'give_up';
 

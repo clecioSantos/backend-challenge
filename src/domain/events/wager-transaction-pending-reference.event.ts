@@ -14,7 +14,7 @@ export interface WagerTransactionPendingReferenceData {
   referenceExternalTransactionId: string;
 }
 
-/** Emitted when a reversal arrives before the transaction it references. */
+/** Emitido quando uma reversão chega antes da transação que ela referencia. */
 export class WagerTransactionPendingReference extends IntegrationEvent<WagerTransactionPendingReferenceData> {
   readonly eventType = 'WagerTransactionPendingReference';
   readonly version = 1;

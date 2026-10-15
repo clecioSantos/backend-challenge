@@ -1,7 +1,7 @@
 /**
- * Application-facing metrics port. The application never imports a metrics
- * library directly; the infrastructure adapter maps these calls to the chosen
- * backend (Prometheus here).
+ * Port de métricas voltado para a aplicação. A aplicação nunca importa uma
+ * biblioteca de métricas diretamente; o adapter de infraestrutura mapeia estas
+ * chamadas para o backend escolhido (Prometheus aqui).
  */
 export interface MetricsPort {
   recordTransaction(status: string): void;

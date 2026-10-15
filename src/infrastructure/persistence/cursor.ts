@@ -15,9 +15,9 @@ export class InvalidCursorError extends DomainError {
 const SEPARATOR = '|';
 
 /**
- * Ledger cursors are opaque, URL-safe tokens over `(createdAt, id)`. Ordering
- * by `(created_at, id)` makes the position stable even when many entries share
- * the same timestamp.
+ * Os cursors de ledger são tokens opacos e seguros para URL sobre `(createdAt, id)`. A ordenação
+ * por `(created_at, id)` torna a posição estável mesmo quando muitas entradas compartilham
+ * o mesmo timestamp.
  */
 export function encodeLedgerCursor(cursor: LedgerCursor): string {
   return Buffer.from(`${cursor.createdAt.toISOString()}${SEPARATOR}${cursor.id}`, 'utf8').toString(

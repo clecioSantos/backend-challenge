@@ -9,9 +9,9 @@ export interface WagerTransactionRepository {
   findById(id: string): Promise<WagerTransaction | null>;
 
   /**
-   * Row-level locked read (`SELECT ... FOR UPDATE`). The reference worker uses
-   * it after taking the wallet lock so two workers can never resume the same
-   * `PENDING_REFERENCE` row in parallel.
+   * Leitura com lock em nível de linha (`SELECT ... FOR UPDATE`). O worker de
+   * referência a utiliza após adquirir o lock da wallet, para que dois workers
+   * nunca retomem a mesma linha `PENDING_REFERENCE` em paralelo.
    */
   findByIdForUpdate(id: string): Promise<WagerTransaction | null>;
 
@@ -22,15 +22,15 @@ export interface WagerTransactionRepository {
     externalTransactionId: string,
   ): Promise<WagerTransaction | null>;
 
-  /** Reversal rows (REFUND/ROLLBACK) already pointing at a reference. */
+  /** Linhas de reversão (REFUND/ROLLBACK) que já apontam para uma referência. */
   findReversalsOf(referenceTransactionId: string): Promise<WagerTransaction[]>;
 
-  /** Throws `UniqueConstraintViolationError` when the idempotency key is taken. */
+  /** Lança `UniqueConstraintViolationError` quando a chave de idempotência já está em uso. */
   insert(transaction: WagerTransaction): Promise<void>;
 
   save(transaction: WagerTransaction): Promise<void>;
 
-  /** `PENDING_REFERENCE` rows whose retry is due, oldest first. */
+  /** Linhas `PENDING_REFERENCE` cujo retry está vencido, da mais antiga para a mais recente. */
   findPendingReferenceDue(page: PendingReferencePage): Promise<WagerTransaction[]>;
 
   count(): Promise<number>;

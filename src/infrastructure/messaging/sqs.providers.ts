@@ -3,7 +3,7 @@ import type { Provider } from '@nestjs/common';
 import type { AppConfig } from '../../config/env';
 import { APP_CONFIG } from '../config/app-config.provider';
 
-/** Injection token for the shared SQS client. */
+/** Token de injeção para o cliente SQS compartilhado. */
 export const SQS_CLIENT = Symbol('SQS_CLIENT');
 
 export const sqsClientProvider: Provider = {

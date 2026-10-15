@@ -77,7 +77,7 @@ describe('wager lifecycle', () => {
     const reconciliation = await h.reconcile.execute(walletId);
     expect(reconciliation.consistent).toBe(true);
     expect(reconciliation.storedBalance.toString()).toBe('125.00');
-    // OPENING + BET + WIN = 3 entries; LOSS produces none.
+    // OPENING + BET + WIN = 3 lançamentos; LOSS não produz nenhum.
     expect(reconciliation.checkedEntries).toBe(3);
   });
 
@@ -256,7 +256,7 @@ describe('reversals and references', () => {
     const balanceEvents = await h.orm.em.getConnection().execute<{ count: string }[]>(
       `select count(*)::text as count from "outbox_messages" where "event_type" = 'WalletBalanceChanged'`,
     );
-    expect(balanceEvents[0]!.count).toBe('1'); // only the OPENING credit
+    expect(balanceEvents[0]!.count).toBe('1'); // apenas o crédito de OPENING
   });
 });
 

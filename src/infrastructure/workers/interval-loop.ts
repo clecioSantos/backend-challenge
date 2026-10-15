@@ -5,7 +5,7 @@ function delay(ms: number): Promise<void> {
 }
 
 export interface IntervalLoop {
-  /** Stops scheduling new runs and resolves once the current run has finished. */
+  /** Para de agendar novas execuções e resolve quando a execução atual terminar. */
   stop(): Promise<void>;
 }
 
@@ -16,9 +16,9 @@ export interface IntervalLoopOptions {
 }
 
 /**
- * Small cooperative scheduler for background workers. Runs `task` every
- * `intervalMs`, never overlapping two runs, and stops cleanly within one
- * interval so shutdown cannot hang.
+ * Pequeno agendador cooperativo para workers em background. Executa `task` a
+ * cada `intervalMs`, nunca sobrepondo duas execuções, e para de forma limpa
+ * dentro de um intervalo para que o shutdown não trave.
  */
 export function startIntervalLoop(options: IntervalLoopOptions): IntervalLoop {
   let running = true;

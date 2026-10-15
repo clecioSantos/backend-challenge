@@ -20,9 +20,9 @@ export interface MikroOrmConfigOptions extends DatabaseConfig {
 }
 
 /**
- * MikroORM connection options. Schema is owned by versioned migrations under
- * `/migrations`; the entities only describe the mapping so the unit of work
- * and identity map can operate.
+ * Opções de conexão do MikroORM. O schema é de responsabilidade das migrations versionadas em
+ * `/migrations`; as entities apenas descrevem o mapeamento para que o unit of work
+ * e o identity map possam operar.
  */
 export function buildMikroOrmConfig(options: MikroOrmConfigOptions): Options {
   return defineConfig({

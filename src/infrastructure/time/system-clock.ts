@@ -1,6 +1,6 @@
 import type { Clock } from '../../domain/shared/clock.port';
 
-/** Default clock backed by the host system time. */
+/** Clock padrão respaldado pelo horário do sistema host. */
 export class SystemClock implements Clock {
   now(): Date {
     return new Date();

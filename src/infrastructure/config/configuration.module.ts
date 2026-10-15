@@ -2,9 +2,9 @@ import { Global, Module } from '@nestjs/common';
 import { APP_CONFIG, appConfigProvider } from './app-config.provider';
 
 /**
- * Loads and validates the environment once, then exposes it as a single
- * immutable value. Marked global so feature modules do not have to import it
- * explicitly just to read configuration.
+ * Carrega e valida o ambiente uma única vez, então o expõe como um único valor
+ * imutável. Marcado como global para que os módulos de funcionalidade não
+ * precisem importá-lo explicitamente apenas para ler configuração.
  */
 @Global()
 @Module({

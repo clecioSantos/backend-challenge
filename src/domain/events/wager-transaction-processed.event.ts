@@ -28,7 +28,7 @@ export interface ProcessedEventSource {
   ctx: EventContext;
 }
 
-/** Emitted for every applied transaction, including balance-neutral `LOSS`. */
+/** Emitido para toda transação aplicada, incluindo `LOSS`, que é neutra em saldo. */
 export class WagerTransactionProcessed extends IntegrationEvent<WagerTransactionProcessedData> {
   readonly eventType = 'WagerTransactionProcessed';
   readonly version = 1;

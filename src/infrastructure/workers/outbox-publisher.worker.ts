@@ -8,14 +8,15 @@ import { APP_CONFIG } from '../config/app-config.provider';
 import { startIntervalLoop, type IntervalLoop } from './interval-loop';
 
 /**
- * Transactional outbox publisher.
+ * Publisher do outbox transacional.
  *
- * Each tick claims a batch of due rows with `FOR UPDATE SKIP LOCKED`, publishes
- * them, marks them published and commits. Because the row lock is held for the
- * whole publish+mark cycle, concurrent publishers never send the same row, and
- * a crash after commit but before publish leaves the row unpublished for the
- * next tick. A publish that succeeds but whose commit fails is simply retried,
- * which is safe: consumers deduplicate.
+ * A cada tick, reserva um lote de linhas vencidas com `FOR UPDATE SKIP LOCKED`,
+ * publica-as, marca-as como publicadas e faz commit. Como o lock da linha é
+ * mantido durante todo o ciclo de publicação+marcação, publishers concorrentes
+ * nunca enviam a mesma linha, e uma queda após o commit mas antes da publicação
+ * deixa a linha não publicada para o próximo tick. Uma publicação que tem
+ * sucesso mas cujo commit falha é simplesmente reprocessada, o que é seguro:
+ * os consumidores deduplicam.
  */
 @Injectable()
 export class OutboxPublisherWorker implements OnModuleInit, OnModuleDestroy {

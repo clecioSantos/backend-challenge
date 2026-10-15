@@ -1,9 +1,9 @@
-/** Minimal, transport-agnostic description of an integration event to publish. */
+/** Descrição mínima e agnóstica de transporte de um evento de integração a publicar. */
 export interface PublishableMessage {
-  /** Stable event id; also used as the broker deduplication id. */
+  /** Id de evento estável; também usado como id de deduplicação do broker. */
   id: string;
   eventType: string;
-  /** Used as the FIFO message group id to preserve per-aggregate ordering. */
+  /** Usado como group id da mensagem FIFO para preservar a ordenação por aggregate. */
   aggregateId: string;
   payload: Record<string, unknown>;
 }

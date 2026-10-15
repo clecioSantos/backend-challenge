@@ -1,10 +1,11 @@
 import type { FailureCode } from './failure-code';
 
 /**
- * Base class for every error that expresses a broken domain rule or an
- * expected business outcome. Infrastructure errors (network, SQL, broker)
- * must not extend this type so the application layer can tell "the request is
- * invalid" apart from "the world is temporarily broken".
+ * Classe base para todo erro que expressa uma regra de domínio violada ou um
+ * resultado de negócio esperado. Erros de infraestrutura (rede, SQL, broker)
+ * não devem estender este tipo, para que a camada de aplicação consiga
+ * distinguir "a requisição é inválida" de "o mundo está temporariamente
+ * quebrado".
  */
 export abstract class DomainError extends Error {
   abstract readonly code: string;
@@ -106,7 +107,7 @@ export class WalletAlreadyExistsError extends DomainError {
   }
 }
 
-// -- reference related -------------------------------------------------------
+// -- relacionados a referência ----------------------------------------------
 
 export class ReferenceRequiredError extends DomainError {
   readonly code = 'REFERENCE_REQUIRED';
@@ -178,7 +179,7 @@ export class ReferenceAlreadyReversedError extends DomainError {
   }
 }
 
-// -- technical ---------------------------------------------------------------
+// -- técnicos ---------------------------------------------------------------
 
 export class OptimisticLockError extends DomainError {
   readonly code = 'OPTIMISTIC_LOCK_CONFLICT';

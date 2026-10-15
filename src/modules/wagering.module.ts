@@ -22,9 +22,9 @@ import { ProvidersController } from '../http/controllers/providers.controller';
 import { ProviderIdentityGuard } from '../http/guards/provider-identity.guard';
 
 /**
- * Wires the application use cases and the HTTP ingress. Use cases are built
- * with explicit factories so their ports (interfaces, no runtime value) can be
- * injected by token.
+ * Conecta os use cases da aplicação e o ingresso HTTP. Os use cases são construídos
+ * com factories explícitas para que seus ports (interfaces, sem valor em runtime) possam ser
+ * injetados por token.
  */
 @Module({
   imports: [PersistenceModule],

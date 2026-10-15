@@ -15,10 +15,11 @@ export interface OutboxMessageState {
 }
 
 /**
- * Transactional outbox record. Written in the same SQL transaction as the
- * financial mutation, then published asynchronously by a worker. Concurrency
- * between publishers is handled by `SELECT ... FOR UPDATE SKIP LOCKED` in the
- * repository, so several instances can drain the same table safely.
+ * Registro de outbox transacional. Escrito na mesma transação SQL que a
+ * mutação financeira e então publicado de forma assíncrona por um worker. A
+ * concorrência entre publishers é tratada por
+ * `SELECT ... FOR UPDATE SKIP LOCKED` no repository, de modo que várias
+ * instâncias podem drenar a mesma tabela com segurança.
  */
 export class OutboxMessage {
   private constructor(
@@ -86,8 +87,8 @@ export class OutboxMessage {
   }
 
   /**
-   * Increments `attempts` and computes the next attempt time using exponential
-   * backoff capped at `policy.maxMs`.
+   * Incrementa `attempts` e calcula o horário da próxima tentativa usando
+   * backoff exponencial limitado a `policy.maxMs`.
    */
   scheduleRetry(now: Date, policy: BackoffPolicy = DEFAULT_OUTBOX_BACKOFF): void {
     this._attempts += 1;

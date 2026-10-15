@@ -33,7 +33,7 @@ class RecordingPublisher implements MessagePublisher {
   }
 }
 
-/** Mirrors the worker's claim -> publish -> mark -> commit cycle. */
+/** Espelha o ciclo claim -> publish -> mark -> commit do worker. */
 async function drainOutbox(uow: UnitOfWork, publisher: MessagePublisher): Promise<string[]> {
   return uow.run(async (tx) => {
     const messages = await tx.outbox.lockDueForUpdate(new Date(), 100);
@@ -76,7 +76,7 @@ async function walletCount(): Promise<string> {
 describe('transactional outbox', () => {
   it('writes the event in the same transaction as the financial change', async () => {
     await seedOutbox();
-    // OPENING + BET, each producing a processed event and a balance-changed event.
+    // OPENING + BET, cada um produzindo um evento processed e um evento de alteração de saldo.
     expect(await pendingCount()).toBe('4');
   });
 
@@ -121,7 +121,7 @@ describe('transactional outbox', () => {
     publisher.failNext = true;
     await expect(drainOutbox(uow, publisher)).rejects.toThrow();
 
-    // The entire transaction rolled back, so nothing was marked as published.
+    // A transação inteira sofreu rollback, então nada foi marcado como published.
     expect(await pendingCount()).toBe('4');
     expect(publisher.published).toHaveLength(0);
   });

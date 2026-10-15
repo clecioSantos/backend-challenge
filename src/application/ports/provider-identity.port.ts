@@ -1,21 +1,21 @@
 /**
- * Authentication extension point (challenge section 2).
+ * Ponto de extensão de autenticação (seção 2 do desafio).
  *
- * Authentication is intentionally out of scope for scoring. Instead of a
- * hand-rolled user store, the code exposes this port: swap the no-op adapter
- * for an OIDC/JWKS-backed one (Keycloak, Zitadel, ...) and the rest of the
- * application is untouched. See ARCHITECTURE.md for the intended design.
+ * A autenticação está intencionalmente fora do escopo de avaliação. Em vez de
+ * um user store feito à mão, o código expõe este port: troque o adapter no-op
+ * por um com suporte a OIDC/JWKS (Keycloak, Zitadel, ...) e o restante da
+ * aplicação permanece intacto. Consulte ARCHITECTURE.md para o design pretendido.
  */
 export interface ProviderIdentity {
-  /** Subject of the authenticated provider, e.g. the `providerId`. */
+  /** Subject do provider autenticado, por exemplo o `providerId`. */
   providerId: string;
   scopes: readonly string[];
 }
 
 export interface ProviderIdentityPort {
   /**
-   * Resolves the caller identity from the transport context.
-   * The default adapter always returns `null` (anonymous happy path).
+   * Resolve a identidade do chamador a partir do contexto de transporte.
+   * O adapter padrão sempre retorna `null` (caminho feliz anônimo).
    */
   resolve(context: unknown): Promise<ProviderIdentity | null>;
 }

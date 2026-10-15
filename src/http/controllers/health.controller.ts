@@ -12,9 +12,9 @@ interface ReadinessChecks {
 }
 
 /**
- * Liveness proves the process is up; readiness additionally proves the two hard
- * dependencies (PostgreSQL and SQS) are reachable. Health endpoints are open —
- * they intentionally do not use the authentication guard.
+ * Liveness prova que o processo está de pé; readiness adicionalmente prova que as duas
+ * dependências críticas (PostgreSQL e SQS) estão acessíveis. Endpoints de health são abertos —
+ * eles intencionalmente não usam o guard de autenticação.
  */
 @Controller('health')
 export class HealthController {

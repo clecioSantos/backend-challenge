@@ -3,12 +3,12 @@ import { loadConfig } from '../../../config/env';
 import { buildMikroOrmConfig } from '../mikro-orm.config';
 
 /**
- * Migration runner used by the `migration:*` package scripts.
+ * Executor de migrations usado pelos scripts `migration:*` do package.
  *
  *   bun run src/infrastructure/persistence/mikro-orm/cli.ts <up|down|create|fresh|list|pending>
  *
- * Kept deliberately small: it wires the same configuration the application
- * uses, then delegates to MikroORM's migrator.
+ * Mantido deliberadamente pequeno: ele conecta a mesma configuração que a aplicação
+ * usa e então delega para o migrator do MikroORM.
  */
 const COMMANDS = ['up', 'down', 'create', 'fresh', 'list', 'pending'] as const;
 type Command = (typeof COMMANDS)[number];

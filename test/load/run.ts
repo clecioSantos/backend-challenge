@@ -1,15 +1,15 @@
 /**
- * Load experiment.
+ * Experimento de carga.
  *
- * Drives the real processed path (use case -> PostgreSQL transactions) with a
- * fixed worker pool, then reports throughput, latency percentiles, error rate,
- * lock conflicts, outbox lag and a final ledger reconciliation. It talks to the
- * same code the HTTP ingress uses and never mocks the database.
+ * Executa o caminho real de processamento (use case -> transações PostgreSQL) com um
+ * pool de workers fixo, depois reporta throughput, percentis de latência, taxa de erro,
+ * conflitos de lock, lag do outbox e uma reconciliação final do ledger. Ele conversa com o
+ * mesmo código que o ingress HTTP usa e nunca faz mock do banco de dados.
  *
- * Usage:
+ * Uso:
  *   bun run test:load
  *
- * Environment (defaults shown):
+ * Ambiente (valores padrão mostrados):
  *   LOAD_WALLETS=20  LOAD_OPERATIONS=2000  LOAD_CONCURRENCY=50  LOAD_AMOUNT=1.00
  */
 import { createHarness, wagerCommand } from '../support/harness';

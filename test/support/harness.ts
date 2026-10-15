@@ -29,7 +29,7 @@ export interface Harness {
   processWagerTransaction: ProcessWagerTransactionUseCase;
   listLedger: ListWalletLedgerUseCase;
   reconcile: ReconcileWalletUseCase;
-  /** Simulates an independent application instance sharing the same database. */
+  /** Simula uma instância independente da aplicação compartilhando o mesmo banco de dados. */
   fork(): ProcessWagerTransactionUseCase;
   forkUnitOfWork(): MikroOrmUnitOfWork;
   reset(): Promise<void>;

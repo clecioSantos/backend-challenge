@@ -16,8 +16,9 @@ export interface WalletBalanceChangedData {
 }
 
 /**
- * Emitted exactly once per ledger entry — i.e. only when the balance actually
- * changes. Balance-neutral outcomes (`LOSS`) never produce this event.
+ * Emitido exatamente uma vez por lançamento no ledger — ou seja, apenas quando
+ * o saldo realmente muda. Resultados neutros em saldo (`LOSS`) nunca produzem
+ * este evento.
  */
 export class WalletBalanceChanged extends IntegrationEvent<WalletBalanceChangedData> {
   readonly eventType = 'WalletBalanceChanged';

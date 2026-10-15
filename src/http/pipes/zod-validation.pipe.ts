@@ -3,9 +3,9 @@ import type { ZodSchema } from 'zod';
 import { RequestValidationError } from '../errors/request-validation.error';
 
 /**
- * Binds a zod schema to a route parameter. On failure it throws a
- * `RequestValidationError`, which the exception filter renders as a `400` with
- * a per-field breakdown — so a provider can fix the payload without guessing.
+ * Vincula um schema zod a um parâmetro de rota. Em caso de falha, lança um
+ * `RequestValidationError`, que o filter de exceções renderiza como um `400` com
+ * uma discriminação por campo — para que um provider possa corrigir o payload sem adivinhar.
  */
 @Injectable()
 export class ZodValidationPipe<T> implements PipeTransform {

@@ -1,10 +1,11 @@
 import { v7 as uuidv7 } from 'uuid';
 
 /**
- * Generates a time-ordered UUID (v7). Time-ordering keeps primary-key inserts
- * close to the B-tree's right edge, which keeps index bloat low compared to
- * v4 identifiers. The generator lives in the domain because identifiers are
- * part of the aggregate's identity, not an infrastructure detail.
+ * Gera um UUID ordenado por tempo (v7). A ordenação temporal mantém as
+ * inserções de chave primária próximas da borda direita da B-tree, o que
+ * mantém o inchaço do índice baixo em comparação com identificadores v4. O
+ * gerador vive no domínio porque os identificadores fazem parte da identidade
+ * do aggregate, não de um detalhe de infraestrutura.
  */
 export function newId(): string {
   return uuidv7();

@@ -51,7 +51,7 @@ describe('Wallet', () => {
     expect(() => wallet.debit(Money.from({ amount: '100.01', currency: 'BRL' }), 'tx-1', later)).toThrow(
       InsufficientFundsError,
     );
-    // failed debit must not mutate state
+    // débito que falhou não deve mutar o estado
     expect(wallet.balance.toString()).toBe('100.00');
     expect(wallet.version).toBe(1);
   });

@@ -21,7 +21,7 @@ export interface RejectedEventSource {
   ctx: EventContext;
 }
 
-/** Emitted when a transaction is rejected by a business rule. */
+/** Emitido quando uma transação é rejeitada por uma regra de negócio. */
 export class WagerTransactionRejected extends IntegrationEvent<WagerTransactionRejectedData> {
   readonly eventType = 'WagerTransactionRejected';
   readonly version = 1;

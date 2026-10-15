@@ -4,9 +4,10 @@ export interface InboxRepository {
   find(consumerName: string, messageId: string): Promise<InboxMessage | null>;
 
   /**
-   * Atomically inserts the dedup record and returns `true` when this caller
-   * won the race. Returns `false` when `(consumerName, messageId)` already
-   * exists, meaning the message was (or is being) handled elsewhere.
+   * Insere o registro de deduplicação de forma atômica e retorna `true` quando
+   * este chamador venceu a corrida. Retorna `false` quando `(consumerName,
+   * messageId)` já existe, o que significa que a mensagem foi (ou está sendo)
+   * tratada em outro lugar.
    */
   insertIfAbsent(message: InboxMessage): Promise<boolean>;
 

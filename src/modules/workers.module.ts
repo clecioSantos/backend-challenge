@@ -5,7 +5,7 @@ import { PendingReferenceWorker } from '../infrastructure/workers/pending-refere
 import { MessagingModule } from './messaging.module';
 import { WageringModule } from './wagering.module';
 
-/** Background workers that drain the outbox and retry pending references. */
+/** Workers em background que drenam a outbox e reprocessam referências pendentes. */
 @Module({
   imports: [PersistenceModule, WageringModule, MessagingModule],
   providers: [OutboxPublisherWorker, PendingReferenceWorker],

@@ -97,7 +97,7 @@ describe('SQS ingress', () => {
 
     const consumer = buildConsumer();
     await consumer.poll();
-    await consumer.poll(); // second pass proves the message was deleted
+    await consumer.poll(); // a segunda passada prova que a mensagem foi deletada
 
     const transaction = await h.orm.em.getConnection().execute<{ status: string }[]>(
       `select "status" from "wager_transactions"

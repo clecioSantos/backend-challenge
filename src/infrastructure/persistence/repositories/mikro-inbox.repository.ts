@@ -13,10 +13,10 @@ export class MikroInboxRepository implements InboxRepository {
   }
 
   async insertIfAbsent(message: InboxMessage): Promise<boolean> {
-    // ON CONFLICT DO NOTHING keeps the surrounding transaction healthy when a
-    // concurrent consumer already claimed the same message. `em.execute` runs on
-    // the transaction context, so the claim commits and rolls back with the
-    // financial effects it guards.
+    // ON CONFLICT DO NOTHING mantém a transação ao redor saudável quando um
+    // consumer concorrente já reivindicou a mesma mensagem. `em.execute` executa no
+    // contexto da transação, então a reivindicação faz commit e rollback junto com os
+    // efeitos financeiros que ela protege.
     const rows = await this.em.execute<{ inserted: number }[]>(
       `insert into "inbox_messages" ("consumer_name", "message_id", "payload_hash", "received_at", "processed_at")
        values (?, ?, ?, ?, ?)

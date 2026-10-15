@@ -53,7 +53,7 @@ describe('concurrency', () => {
     const reconciliation = await h.reconcile.execute(walletId);
     expect(reconciliation.storedBalance.toString()).toBe('20.00');
     expect(reconciliation.consistent).toBe(true);
-    // OPENING + exactly one debit.
+    // OPENING + exatamente um débito.
     expect(reconciliation.checkedEntries).toBe(2);
   });
 
@@ -115,6 +115,6 @@ describe('concurrency', () => {
     const reconciliation = await h.reconcile.execute(walletId);
     expect(reconciliation.storedBalance.toString()).toBe('20.00');
     expect(reconciliation.consistent).toBe(true);
-    expect(reconciliation.checkedEntries).toBe(3); // OPENING + two debits
+    expect(reconciliation.checkedEntries).toBe(3); // OPENING + dois débitos
   });
 });

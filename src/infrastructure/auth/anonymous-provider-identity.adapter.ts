@@ -1,10 +1,11 @@
 import type { ProviderIdentity, ProviderIdentityPort } from '../../application/ports/provider-identity.port';
 
 /**
- * Default adapter: no external identity provider is wired in this challenge, so
- * every caller is anonymous. Swapping this class for an OIDC/JWKS-backed
- * adapter (Keycloak, Zitadel, ...) is the only change required to enforce
- * authentication; the guard and the rest of the application stay the same.
+ * Adapter padrão: nenhum provedor de identidade externo está conectado neste
+ * desafio, então todo chamador é anônimo. Trocar esta classe por um adapter
+ * respaldado em OIDC/JWKS (Keycloak, Zitadel, ...) é a única mudança
+ * necessária para impor autenticação; o guard e o restante da aplicação
+ * permanecem iguais.
  */
 export class AnonymousProviderIdentityAdapter implements ProviderIdentityPort {
   async resolve(): Promise<ProviderIdentity | null> {

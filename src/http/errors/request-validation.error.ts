@@ -1,6 +1,6 @@
 import { DomainError } from '../../domain/shared/errors';
 
-/** Raised by the HTTP validation pipe when a request body/query is malformed. */
+/** Lançado pelo pipe de validação HTTP quando o body/query de uma request está malformado. */
 export class RequestValidationError extends DomainError {
   readonly code = 'VALIDATION_ERROR';
 

@@ -7,10 +7,10 @@ import { buildMikroOrmConfig } from './mikro-orm.config';
 import { MikroOrmUnitOfWork } from './mikro-orm-unit-of-work';
 
 /**
- * Owns the MikroORM lifecycle and exposes the `UnitOfWork` port. The ORM
- * instance is provided directly (instead of going through `MikroOrmModule`) so
- * the application fully controls connection and shutdown semantics and no
- * request-scoped EntityManager is created behind our back.
+ * É responsável pelo ciclo de vida do MikroORM e expõe a port `UnitOfWork`. A instância do ORM
+ * é fornecida diretamente (em vez de passar pelo `MikroOrmModule`) para que
+ * a aplicação controle totalmente a conexão e a semântica de shutdown e nenhum
+ * EntityManager com escopo de requisição seja criado por trás dos panos.
  */
 @Module({
   providers: [

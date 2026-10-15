@@ -95,7 +95,8 @@ export interface WagerTransactionState {
 }
 
 /**
- * Wager transaction aggregate. The lifecycle is a small state machine:
+ * Aggregate de wager transaction. O ciclo de vida é uma pequena máquina de
+ * estados:
  *
  *   PENDING ──▶ PROCESSED
  *      │  └────▶ PENDING_REFERENCE ──▶ PROCESSED
@@ -103,9 +104,10 @@ export interface WagerTransactionState {
  *      └────────────────┴────────────▶ REJECTED
  *                       └────────────▶ FAILED
  *
- * `PROCESSED`, `REJECTED` and `FAILED` are terminal. Any attempt to transition
- * out of a terminal state raises `InvalidTransactionStateError` — that is a
- * programming error, never a business path.
+ * `PROCESSED`, `REJECTED` e `FAILED` são terminais. Qualquer tentativa de
+ * transicionar a partir de um estado terminal lança
+ * `InvalidTransactionStateError` — isso é um erro de programação, nunca um
+ * caminho de negócio.
  */
 export class WagerTransaction {
   private constructor(
@@ -131,7 +133,7 @@ export class WagerTransaction {
     private _nextReferenceAttemptAt?: Date,
   ) {}
 
-  /** Public factory — `OPENING` is reserved for the wallet creation flow. */
+  /** Factory pública — `OPENING` é reservado para o fluxo de criação da wallet. */
   static create(props: CreateWagerTransactionProps): WagerTransaction {
     if (props.kind === WagerTransactionKind.Opening) {
       throw new UnsupportedTransactionKindError(props.kind);
@@ -139,7 +141,7 @@ export class WagerTransaction {
     return WagerTransaction.build(props, WagerTransactionStatus.Pending);
   }
 
-  /** Internal factory used only when opening a wallet with an initial balance. */
+  /** Factory interna usada apenas ao abrir uma wallet com saldo inicial. */
   static opening(props: CreateWagerTransactionProps): WagerTransaction {
     if (props.kind !== WagerTransactionKind.Opening) {
       throw new UnsupportedTransactionKindError(props.kind);
@@ -237,7 +239,7 @@ export class WagerTransaction {
     return this._nextReferenceAttemptAt;
   }
 
-  // -- transitions -----------------------------------------------------------
+  // -- transições ------------------------------------------------------------
 
   markProcessed(referenceTransactionId: string | undefined, balanceAfter: Money, at: Date): void {
     this.assertNotTerminal('mark processed');
@@ -279,15 +281,15 @@ export class WagerTransaction {
   }
 
   /**
-   * Advances the reference-retry counter and stores the next attempt time
-   * computed with exponential backoff.
+   * Avança o contador de retries de referência e armazena o horário da próxima
+   * tentativa, calculado com backoff exponencial.
    */
   scheduleReferenceRetry(now: Date, policy: BackoffPolicy = DEFAULT_REFERENCE_BACKOFF): void {
     this._referenceAttempts += 1;
     this._nextReferenceAttemptAt = new Date(now.getTime() + computeBackoffDelay(this._referenceAttempts, policy));
   }
 
-  // -- domain queries --------------------------------------------------------
+  // -- consultas de domínio --------------------------------------------------
 
   isTerminal(): boolean {
     return TERMINAL_STATUSES.has(this._status);

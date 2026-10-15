@@ -9,12 +9,13 @@ import { APP_CONFIG } from '../config/app-config.provider';
 import { startIntervalLoop, type IntervalLoop } from './interval-loop';
 
 /**
- * Drives `PENDING_REFERENCE` transactions forward.
+ * Impulsiona transações `PENDING_REFERENCE` adiante.
  *
- * It only discovers due ids in one short transaction and then replays each one
- * through the very same use case as the ingress paths. The use case re-locks the
- * wallet and the transaction row, so two workers racing on the same id are
- * serialised and the loser observes the terminal state and does nothing.
+ * Ele apenas descobre ids vencidos em uma transação curta e então reproduz cada
+ * um através do mesmo use case dos caminhos de ingresso. O use case trava
+ * novamente a wallet e a linha da transação, então dois workers disputando o
+ * mesmo id são serializados e o perdedor observa o estado terminal e não faz
+ * nada.
  */
 @Injectable()
 export class PendingReferenceWorker implements OnModuleInit, OnModuleDestroy {

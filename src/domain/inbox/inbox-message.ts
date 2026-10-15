@@ -14,13 +14,13 @@ export interface InboxMessageState {
 }
 
 /**
- * Durable deduplication record keyed by `(consumerName, messageId)`.
+ * Registro durável de deduplicação com chave `(consumerName, messageId)`.
  *
- * The row is claimed in the same SQL transaction that applies the financial
- * effects, so a message can never be applied twice even across instances or
- * redeliveries. `processedAt` is set right before the transaction commits; if
- * the transaction rolls back, the claim rolls back with it and the broker may
- * redeliver safely.
+ * A linha é reivindicada na mesma transação SQL que aplica os efeitos
+ * financeiros, de modo que uma mensagem nunca pode ser aplicada duas vezes,
+ * mesmo entre instâncias ou reentregas. `processedAt` é definido logo antes do
+ * commit da transação; se a transação sofrer rollback, a reivindicação sofre
+ * rollback junto e o broker pode reentregar com segurança.
  */
 export class InboxMessage {
   private constructor(

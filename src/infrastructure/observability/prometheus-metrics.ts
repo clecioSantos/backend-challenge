@@ -1,7 +1,7 @@
 import { Counter, Gauge, Histogram, Registry, collectDefaultMetrics } from 'prom-client';
 import type { MetricsPort } from '../../application/ports/metrics.port';
 
-/** Token for the raw Prometheus registry, exposed by the `/metrics` endpoint. */
+/** Token para o registry bruto do Prometheus, exposto pelo endpoint `/metrics`. */
 export const PROMETHEUS_REGISTRY = Symbol('PROMETHEUS_REGISTRY');
 
 export class PrometheusMetrics implements MetricsPort {

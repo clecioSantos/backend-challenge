@@ -76,18 +76,18 @@ export type ProcessWagerTransactionOutcome =
       idempotentReplay: boolean;
     };
 
-/** Terminal resume result used by the scheduled reference worker. */
+/** Resultado terminal de resume usado pelo worker de referência agendado. */
 export type ResumeOutcome = 'processed' | 'pending' | 'rejected' | 'ignored';
 
 /**
- * Central application service. It is shared verbatim by the HTTP ingress and
- * the SQS consumer (challenge section 10), which guarantees both entry points
- * enforce the same domain rules and produce the same ledger effects.
+ * Serviço central da aplicação. É compartilhado literalmente pelo ingresso HTTP e
+ * pelo consumer SQS (seção 10 do desafio), o que garante que ambos os pontos de
+ * entrada apliquem as mesmas regras de domínio e produzam os mesmos efeitos no ledger.
  *
- * Concurrency: the wallet row is locked (`SELECT ... FOR UPDATE`) before the
- * idempotency key is inspected, so two requests carrying the same key are
- * serialised on the wallet and the loser observes the winner's committed row
- * and replays it instead of racing on the unique index.
+ * Concorrência: a linha da wallet é travada (`SELECT ... FOR UPDATE`) antes de a
+ * chave de idempotência ser inspecionada, de modo que duas requisições com a mesma
+ * chave são serializadas na wallet e a perdedora observa a linha commitada pela
+ * vencedora e a reproduz, em vez de disputar o índice único.
  */
 export class ProcessWagerTransactionUseCase {
   private readonly referenceBackoff: BackoffPolicy;
@@ -246,9 +246,9 @@ export class ProcessWagerTransactionUseCase {
   }
 
   /**
-   * Re-drives a transaction parked as `PENDING_REFERENCE`. Called by the
-   * scheduled worker. Each call runs in its own transaction so one failure
-   * cannot block the rest of the batch.
+   * Reprocessa uma transação estacionada como `PENDING_REFERENCE`. Chamado pelo
+   * worker agendado. Cada chamada roda em sua própria transação, de modo que uma
+   * falha não pode bloquear o restante do lote.
    */
   async resume(transactionId: string): Promise<ResumeOutcome> {
     const at = this.clock.now();
@@ -261,9 +261,9 @@ export class ProcessWagerTransactionUseCase {
 
       const ctx: EventContext = { correlationId: `resume:${transactionId}`, causationId: transactionId };
 
-      // Lock order is always wallet -> transaction, mirroring the ingress path.
-      // Re-reading the transaction with a row lock after the wallet lock closes
-      // the window where two workers could otherwise resume the same row.
+      // A ordem de lock é sempre wallet -> transação, espelhando o caminho de ingresso.
+      // Reler a transação com um row lock após o lock da wallet fecha
+      // a janela em que dois workers poderiam, de outra forma, reprocessar a mesma linha.
       const wallet = await tx.wallets.findByIdForUpdate(initial.walletId);
       const transaction = await tx.wagerTransactions.findByIdForUpdate(transactionId);
       if (!transaction || transaction.status !== WagerTransactionStatus.PendingReference) {
@@ -317,7 +317,7 @@ export class ProcessWagerTransactionUseCase {
     });
   }
 
-  // -- internals -------------------------------------------------------------
+  // -- internos --------------------------------------------------------------
 
   private async finish(
     tx: TransactionContext,

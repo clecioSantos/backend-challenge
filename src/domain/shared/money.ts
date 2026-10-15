@@ -1,13 +1,14 @@
 import Decimal from 'decimal.js';
 import { CurrencyMismatchError, InvalidMoneyError } from './errors';
 
-// The whole service works with exact decimals. `Decimal` is configured once,
-// at module load, so every instance shares the same precision and rounding
-// policy. 2-decimal inputs never round, but the policy still protects against
-// accidental higher-precision arithmetic.
+// Todo o serviço trabalha com decimais exatos. O `Decimal` é configurado uma
+// única vez, no carregamento do módulo, para que toda instância compartilhe a
+// mesma precisão e política de arredondamento. Entradas com 2 casas decimais
+// nunca arredondam, mas a política ainda protege contra aritmética acidental
+// de precisão maior.
 Decimal.set({ precision: 40, rounding: Decimal.ROUND_HALF_UP, toExpNeg: -100, toExpPos: 100 });
 
-/** Wire/DTO representation. Money is serialized as a decimal string. */
+/** Representação wire/DTO. Money é serializado como uma string decimal. */
 export interface MoneyProps {
   amount: string;
   currency: string;
@@ -17,14 +18,15 @@ const AMOUNT_PATTERN = /^\d{1,18}(?:\.\d{1,2})?$/;
 const CURRENCY_PATTERN = /^[A-Z]{3}$/;
 
 /**
- * Immutable value object for monetary amounts.
+ * Value object imutável para valores monetários.
  *
- * Contract:
- *  - `amount` is a decimal string with a fixed scale of 2 (`"25.00"`);
- *  - negative values are rejected on input; arithmetic may still produce them
- *    internally (e.g. `subtract`) so callers can compare against zero;
- *  - all binary operations require matching currencies;
- *  - the type never depends on ORM or framework primitives.
+ * Contrato:
+ *  - `amount` é uma string decimal com escala fixa de 2 (`"25.00"`);
+ *  - valores negativos são rejeitados na entrada; a aritmética ainda pode
+ *    produzi-los internamente (ex.: `subtract`) para que os chamadores possam
+ *    comparar com zero;
+ *  - todas as operações binárias exigem moedas correspondentes;
+ *  - o tipo nunca depende de primitivas de ORM ou framework.
  */
 export class Money {
   private constructor(
@@ -59,9 +61,10 @@ export class Money {
   }
 
   /**
-   * Trusted, internal-only factory for values that may legitimately be signed
-   * (e.g. a reconciliation difference or a ledger-derived balance). It still
-   * validates currency and finiteness but skips the positive-only input rule.
+   * Factory confiável, apenas interna, para valores que podem legitimamente ter
+   * sinal (ex.: uma diferença de conciliação ou um saldo derivado do ledger).
+   * Ela ainda valida moeda e finitude, mas ignora a regra de entrada apenas
+   * positiva.
    */
   static fromTrusted(amount: string, currency: string): Money {
     if (!CURRENCY_PATTERN.test(currency)) {
@@ -83,8 +86,9 @@ export class Money {
   }
 
   /**
-   * Internal constructor used by arithmetic. Keeps the sign so intermediate
-   * results can be negative; re-validated on the way back into the system.
+   * Construtor interno usado pela aritmética. Mantém o sinal para que
+   * resultados intermediários possam ser negativos; revalidado no caminho de
+   * volta para dentro do sistema.
    */
   private static of(value: Decimal, currency: string): Money {
     return new Money(value, currency);

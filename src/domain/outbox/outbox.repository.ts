@@ -4,9 +4,10 @@ export interface OutboxRepository {
   insert(message: OutboxMessage): Promise<void>;
 
   /**
-   * Locks up to `limit` due, unpublished rows with `FOR UPDATE SKIP LOCKED`,
-   * oldest first. The lock is held until the surrounding transaction ends, so
-   * concurrent publishers never pick the same row.
+   * Bloqueia até `limit` linhas vencidas e não publicadas com
+   * `FOR UPDATE SKIP LOCKED`, da mais antiga para a mais recente. O lock é
+   * mantido até o fim da transação adjacente, então publishers concorrentes
+   * nunca pegam a mesma linha.
    */
   lockDueForUpdate(now: Date, limit: number): Promise<OutboxMessage[]>;
 
@@ -14,6 +15,6 @@ export interface OutboxRepository {
 
   countPending(): Promise<number>;
 
-  /** Age in milliseconds of the oldest unpublished row, or `null` when drained. */
+  /** Idade em milissegundos da linha não publicada mais antiga, ou `null` quando drenado. */
   oldestPendingAgeMs(now: Date): Promise<number | null>;
 }

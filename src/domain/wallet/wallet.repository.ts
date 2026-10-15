@@ -1,12 +1,12 @@
 import type { Wallet } from './wallet';
 
 /**
- * Persistence port for the `Wallet` aggregate.
+ * Port de persistência do aggregate `Wallet`.
  *
- * `findByIdForUpdate` is the concurrency primitive: it takes a row-level
- * pessimistic lock (`SELECT ... FOR UPDATE`) scoped to the current SQL
- * transaction, serialising every movement that targets the same wallet while
- * letting different wallets proceed in parallel.
+ * `findByIdForUpdate` é a primitiva de concorrência: ele adquire um lock
+ * pessimista em nível de linha (`SELECT ... FOR UPDATE`) com escopo na
+ * transação SQL atual, serializando todo movimento que visa a mesma wallet e,
+ * ao mesmo tempo, permitindo que wallets diferentes prossigam em paralelo.
  */
 export interface WalletRepository {
   findById(id: string): Promise<Wallet | null>;
@@ -15,12 +15,12 @@ export interface WalletRepository {
 
   findByPlayerAndCurrency(playerId: string, currency: string): Promise<Wallet | null>;
 
-  /** Throws `UniqueConstraintViolationError` when `(playerId, currency)` already exists. */
+  /** Lança `UniqueConstraintViolationError` quando `(playerId, currency)` já existe. */
   insert(wallet: Wallet): Promise<void>;
 
   /**
-   * Persists balance/version changes guarded by `expectedVersion`. Throws
-   * `OptimisticLockError` if the stored version no longer matches.
+   * Persiste alterações de saldo/version protegidas por `expectedVersion`.
+   * Lança `OptimisticLockError` se a version armazenada não corresponder mais.
    */
   save(wallet: Wallet, expectedVersion: number): Promise<void>;
 }

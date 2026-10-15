@@ -30,8 +30,9 @@ export type WagerTransactionRequestedData = z.infer<typeof wagerTransactionReque
 export type WagerTransactionRequestedEnvelope = z.infer<typeof envelopeSchema>;
 
 /**
- * Parses and validates the inbound SQS body. Invalid messages are a permanent
- * condition: the caller should route them to the DLQ instead of retrying.
+ * Faz o parse e valida o corpo SQS de entrada. Mensagens inválidas são uma
+ * condição permanente: o chamador deve encaminhá-las para a DLQ em vez de
+ * tentar novamente.
  */
 export function parseWagerTransactionRequested(raw: string): WagerTransactionRequestedEnvelope {
   const json: unknown = JSON.parse(raw);

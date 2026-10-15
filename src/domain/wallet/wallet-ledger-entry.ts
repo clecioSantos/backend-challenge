@@ -4,7 +4,7 @@ import type { Money } from '../shared/money';
 import { LedgerDirection } from './ledger-direction';
 
 export interface CreateLedgerEntryProps {
-  /** Optional so the aggregate can mint the identifier; tests may pin it. */
+  /** Opcional para que o aggregate possa gerar o identificador; os testes podem fixá-lo. */
   id?: string;
   walletId: string;
   transactionId: string;
@@ -27,9 +27,9 @@ export interface LedgerEntryState {
 }
 
 /**
- * Append-only ledger record. Immutability is structural: there are no setters
- * and no transition methods, and the persistence layer enforces it at the
- * schema level (the row cannot be updated or deleted).
+ * Registro de ledger append-only. A imutabilidade é estrutural: não há setters
+ * nem métodos de transição, e a camada de persistência a impõe no nível do
+ * schema (a linha não pode ser atualizada nem removida).
  */
 export class WalletLedgerEntry {
   private constructor(
@@ -90,7 +90,7 @@ export class WalletLedgerEntry {
     );
   }
 
-  /** `balanceBefore ± money === balanceAfter` for the recorded direction. */
+  /** `balanceBefore ± money === balanceAfter` para a direção registrada. */
   isBalanced(): boolean {
     const expected =
       this.direction === LedgerDirection.Debit

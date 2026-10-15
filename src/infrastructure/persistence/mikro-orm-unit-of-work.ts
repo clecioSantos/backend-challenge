@@ -18,12 +18,12 @@ function createTransactionContext(em: EntityManager): TransactionContext {
 }
 
 /**
- * MikroORM-backed unit of work.
+ * unit of work com suporte do MikroORM.
  *
- * `run` opens a real SQL transaction and hands out a context whose repositories
- * share the same `EntityManager`, so wallet, ledger, inbox and outbox writes all
- * commit or roll back together. `read` uses a forked `EntityManager` (fresh
- * identity map, no transaction) for pure queries.
+ * `run` abre uma transação SQL real e entrega um contexto cujos repositories
+ * compartilham o mesmo `EntityManager`, então as escritas de wallet, ledger, inbox e outbox
+ * fazem commit ou rollback juntas. `read` usa um `EntityManager` derivado (identity map
+ * novo, sem transação) para consultas puras.
  */
 export class MikroOrmUnitOfWork implements UnitOfWork {
   constructor(private readonly orm: MikroORM) {}

@@ -2,9 +2,9 @@ import { createHash } from 'node:crypto';
 import type { MoneyProps } from '../../domain/shared/money';
 
 /**
- * Deterministic JSON serialization: object keys sorted lexicographically,
- * arrays kept in order, `undefined` members dropped. Two requests that carry
- * the same business data produce the same string regardless of key order.
+ * Serialização JSON determinística: chaves de objeto ordenadas lexicograficamente,
+ * arrays mantidos em ordem, membros `undefined` descartados. Duas requisições que
+ * carregam os mesmos dados de negócio produzem a mesma string, independentemente da ordem das chaves.
  */
 export function canonicalize(value: unknown): string {
   if (value === null) {
@@ -27,7 +27,7 @@ export function canonicalize(value: unknown): string {
   return JSON.stringify(value) as string;
 }
 
-/** Business fields that identify a wager operation on the wire. */
+/** Campos de negócio que identificam uma operação de wager no wire. */
 export interface WagerPayloadFingerprint {
   providerId: string;
   externalTransactionId: string;

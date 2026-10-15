@@ -12,9 +12,9 @@ export interface ReconcileWalletResult {
 }
 
 /**
- * Compares the materialized `wallets.balance` against the balance rebuilt from
- * the append-only ledger. A divergence is never corrected here — it is
- * reported, so the caller can alert and investigate.
+ * Compara o `wallets.balance` materializado com o saldo reconstruído a partir
+ * do ledger append-only. Uma divergência nunca é corrigida aqui — ela é
+ * reportada, para que o chamador possa alertar e investigar.
  */
 export class ReconcileWalletUseCase {
   constructor(private readonly uow: UnitOfWork) {}

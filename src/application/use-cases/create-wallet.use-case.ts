@@ -26,10 +26,10 @@ export interface CreateWalletResult {
 }
 
 /**
- * Opens a wallet. When the initial balance is positive it also records an
- * internal `OPENING` transaction and its `CREDIT` ledger entry **in the same
- * SQL transaction**, so the materialized balance can always be rebuilt from the
- * ledger. The wallet keeps `version = 1`, as defined by the aggregate.
+ * Abre uma wallet. Quando o saldo inicial é positivo, também registra uma
+ * transação interna `OPENING` e seu lançamento `CREDIT` no ledger **na mesma
+ * transação SQL**, para que o saldo materializado sempre possa ser reconstruído
+ * a partir do ledger. A wallet mantém `version = 1`, conforme definido pelo aggregate.
  */
 export class CreateWalletUseCase {
   constructor(

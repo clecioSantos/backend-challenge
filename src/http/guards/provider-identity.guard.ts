@@ -3,11 +3,11 @@ import type { ProviderIdentityPort } from '../../application/ports/provider-iden
 import { PROVIDER_IDENTITY } from '../../application/ports/tokens';
 
 /**
- * Authentication extension point. It resolves the caller through
- * `ProviderIdentityPort` and attaches the identity to the request, but does not
- * block anonymous access — the challenge treats authentication as out of scope
- * and requires the extension point to stay explicit. Health endpoints do not
- * use this guard.
+ * Ponto de extensão de autenticação. Resolve o chamador por meio de
+ * `ProviderIdentityPort` e anexa a identidade à request, mas não
+ * bloqueia acesso anônimo — o desafio trata a autenticação como fora de escopo
+ * e exige que o ponto de extensão permaneça explícito. Endpoints de health não
+ * usam este guard.
  */
 @Injectable()
 export class ProviderIdentityGuard implements CanActivate {

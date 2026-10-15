@@ -21,17 +21,18 @@ export interface OpenWalletProps {
 }
 
 /**
- * Wallet aggregate root.
+ * Raiz do aggregate Wallet.
  *
- * Invariants enforced here:
- *  - a wallet is single-currency; every movement must match it;
- *  - the balance is never negative;
- *  - every balance change produces exactly one ledger entry;
- *  - `version` starts at 1 and only advances when the balance changes.
+ * Invariantes aplicadas aqui:
+ *  - uma wallet é de moeda única; todo movimento deve corresponder a ela;
+ *  - o saldo nunca é negativo;
+ *  - toda mudança de saldo produz exatamente um lançamento no ledger;
+ *  - `version` começa em 1 e só avança quando o saldo muda.
  *
- * The aggregate deliberately knows nothing about `playerId + currency`
- * uniqueness: that is a cross-aggregate invariant owned by the database
- * (unique index) and surfaced by the repository as a conflict.
+ * O aggregate deliberadamente não sabe nada sobre a unicidade de
+ * `playerId + currency`: essa é uma invariante entre aggregates de
+ * responsabilidade do banco de dados (índice único) e exposta pelo repository
+ * como um conflito.
  */
 export class Wallet {
   private constructor(
@@ -60,7 +61,7 @@ export class Wallet {
     );
   }
 
-  /** Rebuilds a persisted wallet without re-running business validation. */
+  /** Reconstrói uma wallet persistida sem reexecutar a validação de negócio. */
   static rehydrate(state: WalletState): Wallet {
     return new Wallet(
       state.id,

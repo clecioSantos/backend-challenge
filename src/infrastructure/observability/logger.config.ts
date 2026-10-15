@@ -2,11 +2,11 @@ import { randomUUID } from 'node:crypto';
 import type { Params } from 'nestjs-pino';
 
 /**
- * Structured JSON logging.
+ * Logging JSON estruturado.
  *
- * The pino config is intentionally shared between HTTP requests and worker
- * logs. `genReqId` propagates an inbound correlation id or mints one, and the
- * redaction list keeps financial payloads and credentials out of the logs.
+ * A config do pino é intencionalmente compartilhada entre requisições HTTP e
+ * logs de worker. `genReqId` propaga um correlation id de entrada ou gera um,
+ * e a lista de redação mantém payloads financeiros e credenciais fora dos logs.
  */
 export function buildLoggerParams(level: string, appName: string): Params {
   return {

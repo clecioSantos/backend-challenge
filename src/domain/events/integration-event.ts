@@ -7,7 +7,7 @@ export interface IntegrationEventProps<T> {
   data: T;
 }
 
-/** Serialized envelope persisted in the outbox payload column. */
+/** Envelope serializado persistido na coluna payload da outbox. */
 export interface IntegrationEventEnvelope<T> {
   eventId: string;
   eventType: string;
@@ -19,17 +19,17 @@ export interface IntegrationEventEnvelope<T> {
   data: T;
 }
 
-/** Correlation context propagated from the inbound request or SQS message. */
+/** Contexto de correlação propagado a partir da requisição de entrada ou da mensagem SQS. */
 export interface EventContext {
   correlationId: string;
   causationId?: string;
 }
 
 /**
- * Base class for integration events crossing the service boundary.
+ * Classe base para integration events que cruzam a fronteira do serviço.
  *
- * `eventType` and `version` are declared by each concrete subclass so the
- * contract lives in the type, never as a loose string at the call site.
+ * `eventType` e `version` são declarados por cada subclasse concreta, para que
+ * o contrato viva no tipo, nunca como uma string solta no ponto de chamada.
  */
 export abstract class IntegrationEvent<T> {
   abstract readonly eventType: string;
