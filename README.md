@@ -8,6 +8,8 @@ Este desafio é a porta de entrada para fazer parte desse time. Ele foi desenhad
 
 Não esperamos perfeição — esperamos raciocínio claro, código limpo e decisões justificadas. Mostre como você pensa e como você constrói.
 
+> **Neste repositório:** a implementação de referência está em `src/`, as decisões de projeto em [`ARCHITECTURE.md`](./ARCHITECTURE.md) e o passo a passo de execução na [seção 15](#15-implementação--setup-e-comandos).
+
 ---
 
 ## 1. Visão geral
@@ -744,3 +746,64 @@ wallet.balance == saldo reconstruído pelo ledger
 ### Diferenciais opcionais
 
 Teste de carga também conta como diferencial. Se fizer, exponha como `bun run test:load` e registre ambiente, metodologia, throughput, p50/p95/p99, taxa de erro, conflitos de concorrência e outbox lag. Não há meta de RPS — a qualidade do experimento e a honestidade da análise pesam mais que o número bruto.
+
+---
+
+## 15. Implementação — setup e comandos
+
+> Decisões de arquitetura, trade-offs e limitações estão em [`ARCHITECTURE.md`](./ARCHITECTURE.md).
+
+### Pré-requisitos
+
+- **Bun 1.x**
+- **Docker** + **Docker Compose**
+
+### Subir a infraestrutura
+
+```bash
+cp .env.example .env
+bun install
+bun run infra:up        # PostgreSQL + LocalStack (as filas FIFO são criadas automaticamente)
+bun run migration:up    # aplica as migrations versionadas
+```
+
+### Rodar a aplicação
+
+```bash
+bun run start           # http://localhost:3000
+```
+
+- Health: `GET /health/live` (processo) e `GET /health/ready` (PostgreSQL + SQS).
+- Métricas Prometheus: `GET /metrics`.
+- Para rodar mais de uma instância (o lock de linha em `wallets` garante a correção, não há estado em memória):
+
+```bash
+HTTP_PORT=3001 bun run start
+HTTP_PORT=3002 bun run start
+```
+
+### Testes
+
+```bash
+bun run test             # unidade + integração + concorrência (exige a infraestrutura no ar)
+bun run test:unit
+bun run test:integration
+bun run test:concurrency
+bun run test:load        # experimento de carga; ver ARCHITECTURE.md, seção 15
+```
+
+### Qualidade
+
+```bash
+bun run typecheck
+bun run lint
+```
+
+### Migrations
+
+```bash
+bun run migration:up       # aplica
+bun run migration:down     # reverte a última
+bun run migration:create   # gera uma nova migration
+bun run migration:fresh    # reverte tudo e reaplica
+```
