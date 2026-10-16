@@ -1,7 +1,8 @@
 import { Inject, Module, type OnApplicationShutdown } from '@nestjs/common';
 import { MikroORM } from '@mikro-orm/postgresql';
 import type { AppConfig } from '../../config/env';
-import { UNIT_OF_WORK } from '../../application/ports/tokens';
+import type { MetricsPort } from '../../application/ports/metrics.port';
+import { METRICS, UNIT_OF_WORK } from '../../application/ports/tokens';
 import { APP_CONFIG } from '../config/app-config.provider';
 import { buildMikroOrmConfig } from './mikro-orm.config';
 import { MikroOrmUnitOfWork } from './mikro-orm-unit-of-work';
@@ -21,8 +22,8 @@ import { MikroOrmUnitOfWork } from './mikro-orm-unit-of-work';
     },
     {
       provide: UNIT_OF_WORK,
-      inject: [MikroORM],
-      useFactory: (orm: MikroORM) => new MikroOrmUnitOfWork(orm),
+      inject: [MikroORM, METRICS],
+      useFactory: (orm: MikroORM, metrics: MetricsPort) => new MikroOrmUnitOfWork(orm, metrics),
     },
   ],
   exports: [MikroORM, UNIT_OF_WORK],

@@ -7,13 +7,13 @@ import {
   SQSClient,
   type QueueAttributeName,
 } from '@aws-sdk/client-sqs';
-import type { MetricsPort } from '../../src/application/ports/metrics.port';
 import type { ProcessWagerTransactionUseCase } from '../../src/application/use-cases/process-wager-transaction.use-case';
 import type { AppConfig } from '../../src/config/env';
 import { InfrastructureError } from '../../src/domain/shared/errors';
 import { SqsConsumerService } from '../../src/infrastructure/messaging/sqs-consumer.service';
 import { SqsMessagePublisher } from '../../src/infrastructure/messaging/sqs-message-publisher';
 import { createHarness, type Harness } from '../support/harness';
+import { noopMetrics } from '../support/metrics';
 
 // Este arquivo envia de propósito payloads inválidos e provoca falhas; silenciamos
 // o logger do Nest para que os WARN/ERROR esperados não poluam a saída da suíte.
@@ -23,16 +23,7 @@ let h: Harness;
 let client: SQSClient;
 let publisher: SqsMessagePublisher;
 
-const metrics: MetricsPort = {
-  recordTransaction: () => {},
-  recordDuplicate: () => {},
-  recordRetry: () => {},
-  recordLockConflict: () => {},
-  recordDeadLetter: () => {},
-  observeProcessingLatency: () => {},
-  setOutboxPending: () => {},
-  setOutboxLag: () => {},
-};
+const metrics = noopMetrics;
 
 beforeAll(async () => {
   h = await createHarness();

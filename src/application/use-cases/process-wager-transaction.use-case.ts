@@ -10,6 +10,7 @@ import {
   IdempotencyConflictError,
   InfrastructureError,
   InsufficientFundsError,
+  OptimisticLockError,
   WalletNotFoundError,
 } from '../../domain/shared/errors';
 import type { BackoffPolicy } from '../../domain/shared/backoff';
@@ -364,7 +365,21 @@ export class ProcessWagerTransactionUseCase {
     }
 
     await tx.ledger.insert(entry);
-    await tx.wallets.save(wallet, previousVersion);
+
+    try {
+      await tx.wallets.save(wallet, previousVersion);
+    } catch (error) {
+      if (error instanceof OptimisticLockError) {
+        // A wallet é travada com lock pessimista antes de qualquer escrita, então
+        // isto é defesa em profundidade. Tratamos como falha transitória: o
+        // transporte pode tranquilamente retentar em vez de descartar a mensagem.
+        throw new InfrastructureError('Optimistic lock conflict on wallet; please retry', {
+          retryable: true,
+          cause: error,
+        });
+      }
+      throw error;
+    }
 
     transaction.markProcessed(reference?.id, wallet.balance, at);
     await tx.wagerTransactions.save(transaction);

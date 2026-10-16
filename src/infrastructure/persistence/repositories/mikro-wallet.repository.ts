@@ -1,5 +1,6 @@
 import type { EntityManager } from '@mikro-orm/postgresql';
 import { LockMode, UniqueConstraintViolationException } from '@mikro-orm/postgresql';
+import type { MetricsPort } from '../../../application/ports/metrics.port';
 import { OptimisticLockError, UniqueConstraintViolationError } from '../../../domain/shared/errors';
 import type { Wallet } from '../../../domain/wallet/wallet';
 import type { WalletRepository } from '../../../domain/wallet/wallet.repository';
@@ -7,7 +8,10 @@ import { WalletEntity } from '../entities/wallet.entity';
 import { WalletMapper } from '../mappers/wallet.mapper';
 
 export class MikroWalletRepository implements WalletRepository {
-  constructor(private readonly em: EntityManager) {}
+  constructor(
+    private readonly em: EntityManager,
+    private readonly metrics: MetricsPort,
+  ) {}
 
   async findById(id: string): Promise<Wallet | null> {
     const entity = await this.em.findOne(WalletEntity, { id });
@@ -42,6 +46,9 @@ export class MikroWalletRepository implements WalletRepository {
     const entity = await this.em.findOneOrFail(WalletEntity, { id: wallet.id });
 
     if (entity.version !== expectedVersion) {
+      // Defesa em profundidade: o lock pessimista deveria impedir isto, mas se a
+      // versão mudou, contabilizamos o conflito antes de falhar.
+      this.metrics.recordLockConflict('wallet');
       throw new OptimisticLockError('Wallet', wallet.id);
     }
 

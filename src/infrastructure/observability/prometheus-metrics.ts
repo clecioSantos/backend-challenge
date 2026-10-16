@@ -15,6 +15,7 @@ export class PrometheusMetrics implements MetricsPort {
   private readonly processingLatency: Histogram;
   private readonly outboxPending: Gauge;
   private readonly outboxLag: Gauge;
+  private readonly reconciliationDivergences: Counter<'currency'>;
 
   constructor() {
     collectDefaultMetrics({ register: this.registry, prefix: 'wagering_' });
@@ -55,6 +56,12 @@ export class PrometheusMetrics implements MetricsPort {
       buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5],
       registers: [this.registry],
     });
+    this.reconciliationDivergences = new Counter({
+      name: 'wagering_reconciliation_divergences_total',
+      help: 'Divergences detected between the materialized balance and the ledger',
+      labelNames: ['currency'],
+      registers: [this.registry],
+    });
     this.outboxPending = new Gauge({
       name: 'wagering_outbox_pending',
       help: 'Unpublished outbox messages',
@@ -85,6 +92,10 @@ export class PrometheusMetrics implements MetricsPort {
 
   recordDeadLetter(component: string): void {
     this.deadLetters.inc({ component });
+  }
+
+  recordReconciliationDivergence(currency: string): void {
+    this.reconciliationDivergences.inc({ currency });
   }
 
   observeProcessingLatency(seconds: number): void {

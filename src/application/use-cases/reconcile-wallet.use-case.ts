@@ -1,5 +1,6 @@
 import { WalletNotFoundError } from '../../domain/shared/errors';
 import type { Money } from '../../domain/shared/money';
+import type { MetricsPort } from '../ports/metrics.port';
 import type { UnitOfWork } from '../ports/unit-of-work.port';
 
 export interface ReconcileWalletResult {
@@ -14,10 +15,14 @@ export interface ReconcileWalletResult {
 /**
  * Compara o `wallets.balance` materializado com o saldo reconstruído a partir
  * do ledger append-only. Uma divergência nunca é corrigida aqui — ela é
- * reportada, para que o chamador possa alertar e investigar.
+ * reportada (na resposta e em métrica), para que o chamador possa alertar e
+ * investigar.
  */
 export class ReconcileWalletUseCase {
-  constructor(private readonly uow: UnitOfWork) {}
+  constructor(
+    private readonly uow: UnitOfWork,
+    private readonly metrics: MetricsPort,
+  ) {}
 
   async execute(walletId: string): Promise<ReconcileWalletResult> {
     return this.uow.read(async (tx) => {
@@ -29,13 +34,18 @@ export class ReconcileWalletUseCase {
       const calculatedBalance = await tx.ledger.sumForWallet(walletId, wallet.currency);
       const checkedEntries = await tx.ledger.countForWallet(walletId);
       const difference = wallet.balance.subtract(calculatedBalance);
+      const consistent = difference.isZero();
+
+      if (!consistent) {
+        this.metrics.recordReconciliationDivergence(wallet.currency);
+      }
 
       return {
         walletId: wallet.id,
         storedBalance: wallet.balance,
         calculatedBalance,
         difference,
-        consistent: difference.isZero(),
+        consistent,
         checkedEntries,
       };
     });

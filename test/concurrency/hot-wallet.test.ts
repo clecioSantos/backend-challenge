@@ -117,4 +117,21 @@ describe('concurrency', () => {
     expect(reconciliation.consistent).toBe(true);
     expect(reconciliation.checkedEntries).toBe(3); // OPENING + dois débitos
   });
+
+  it('contabiliza conflito de lock quando a versão esperada está desatualizada', async () => {
+    const { walletId } = await openWallet('100.00');
+    const before = h.metrics.lockConflicts;
+
+    await expect(
+      h.uow.run(async (tx) => {
+        const wallet = await tx.wallets.findById(walletId);
+        if (!wallet) {
+          throw new Error('wallet not found');
+        }
+        await tx.wallets.save(wallet, wallet.version + 100);
+      }),
+    ).rejects.toMatchObject({ code: 'OPTIMISTIC_LOCK_CONFLICT' });
+
+    expect(h.metrics.lockConflicts).toBe(before + 1);
+  });
 });

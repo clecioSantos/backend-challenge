@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
 import type { AppConfig } from '../config/env';
-import { UNIT_OF_WORK, CLOCK, PROVIDER_IDENTITY } from '../application/ports/tokens';
+import { UNIT_OF_WORK, CLOCK, METRICS, PROVIDER_IDENTITY } from '../application/ports/tokens';
 import type { UnitOfWork } from '../application/ports/unit-of-work.port';
+import type { MetricsPort } from '../application/ports/metrics.port';
 import type { Clock } from '../domain/shared/clock.port';
 import { CreateWalletUseCase } from '../application/use-cases/create-wallet.use-case';
 import { GetWalletUseCase } from '../application/use-cases/get-wallet.use-case';
@@ -56,8 +57,8 @@ import { ProviderIdentityGuard } from '../http/guards/provider-identity.guard';
     },
     {
       provide: ReconcileWalletUseCase,
-      inject: [UNIT_OF_WORK],
-      useFactory: (uow: UnitOfWork) => new ReconcileWalletUseCase(uow),
+      inject: [UNIT_OF_WORK, METRICS],
+      useFactory: (uow: UnitOfWork, metrics: MetricsPort) => new ReconcileWalletUseCase(uow, metrics),
     },
     {
       provide: GetWagerTransactionUseCase,

@@ -7,6 +7,7 @@ import { ReconcileWalletUseCase } from '../../src/application/use-cases/reconcil
 import { ProcessWagerTransactionUseCase } from '../../src/application/use-cases/process-wager-transaction.use-case';
 import { buildMikroOrmConfig } from '../../src/infrastructure/persistence/mikro-orm.config';
 import { MikroOrmUnitOfWork } from '../../src/infrastructure/persistence/mikro-orm-unit-of-work';
+import { createRecordingMetrics, type RecordingMetrics } from './metrics';
 
 class MutableClock implements Clock {
   private current = new Date('2026-01-01T00:00:00.000Z');
@@ -24,6 +25,7 @@ export interface Harness {
   orm: MikroORM;
   config: AppConfig;
   clock: MutableClock;
+  metrics: RecordingMetrics;
   uow: MikroOrmUnitOfWork;
   createWallet: CreateWalletUseCase;
   processWagerTransaction: ProcessWagerTransactionUseCase;
@@ -41,7 +43,8 @@ export async function createHarness(): Promise<Harness> {
   const orm = await MikroORM.init(buildMikroOrmConfig({ ...config.database, debug: false }));
   await orm.getMigrator().up();
 
-  const uow = new MikroOrmUnitOfWork(orm);
+  const metrics = createRecordingMetrics();
+  const uow = new MikroOrmUnitOfWork(orm, metrics);
   const clock = new MutableClock();
 
   const buildProcessor = (context: MikroOrmUnitOfWork) =>
@@ -57,13 +60,14 @@ export async function createHarness(): Promise<Harness> {
     orm,
     config,
     clock,
+    metrics,
     uow,
     createWallet: new CreateWalletUseCase(uow, clock),
     processWagerTransaction: buildProcessor(uow),
     listLedger: new ListWalletLedgerUseCase(uow),
-    reconcile: new ReconcileWalletUseCase(uow),
-    fork: () => buildProcessor(new MikroOrmUnitOfWork(orm)),
-    forkUnitOfWork: () => new MikroOrmUnitOfWork(orm),
+    reconcile: new ReconcileWalletUseCase(uow, metrics),
+    fork: () => buildProcessor(new MikroOrmUnitOfWork(orm, metrics)),
+    forkUnitOfWork: () => new MikroOrmUnitOfWork(orm, metrics),
     reset,
     close: () => orm.close(true),
   };

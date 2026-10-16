@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Logger,
   Param,
   Post,
   Query,
@@ -25,6 +26,8 @@ import { ZodValidationPipe } from '../pipes/zod-validation.pipe';
 @Controller('wallets')
 @UseGuards(ProviderIdentityGuard)
 export class WalletsController {
+  private readonly logger = new Logger(WalletsController.name);
+
   constructor(
     private readonly createWallet: CreateWalletUseCase,
     private readonly getWallet: GetWalletUseCase,
@@ -84,6 +87,22 @@ export class WalletsController {
   @HttpCode(HttpStatus.OK)
   async reconciliation(@Param('walletId') walletId: string) {
     const result = await this.reconcile.execute(walletId);
+
+    if (!result.consistent) {
+      // Divergência não é corrigida silenciosamente: fica na resposta, na
+      // métrica e no log estruturado para investigação.
+      this.logger.warn(
+        {
+          walletId: result.walletId,
+          currency: result.storedBalance.currency,
+          storedBalance: result.storedBalance.toString(),
+          calculatedBalance: result.calculatedBalance.toString(),
+          difference: result.difference.toString(),
+          checkedEntries: result.checkedEntries,
+        },
+        'Reconciliation divergence detected',
+      );
+    }
 
     return {
       walletId: result.walletId,

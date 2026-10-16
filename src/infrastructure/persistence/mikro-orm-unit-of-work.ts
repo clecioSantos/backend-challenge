@@ -1,5 +1,6 @@
 import type { EntityManager } from '@mikro-orm/postgresql';
 import type { MikroORM } from '@mikro-orm/postgresql';
+import type { MetricsPort } from '../../application/ports/metrics.port';
 import type { TransactionContext, UnitOfWork } from '../../application/ports/unit-of-work.port';
 import { MikroInboxRepository } from './repositories/mikro-inbox.repository';
 import { MikroLedgerRepository } from './repositories/mikro-ledger.repository';
@@ -7,9 +8,9 @@ import { MikroOutboxRepository } from './repositories/mikro-outbox.repository';
 import { MikroWagerTransactionRepository } from './repositories/mikro-wager-transaction.repository';
 import { MikroWalletRepository } from './repositories/mikro-wallet.repository';
 
-function createTransactionContext(em: EntityManager): TransactionContext {
+function createTransactionContext(em: EntityManager, metrics: MetricsPort): TransactionContext {
   return {
-    wallets: new MikroWalletRepository(em),
+    wallets: new MikroWalletRepository(em, metrics),
     wagerTransactions: new MikroWagerTransactionRepository(em),
     ledger: new MikroLedgerRepository(em),
     inbox: new MikroInboxRepository(em),
@@ -26,13 +27,18 @@ function createTransactionContext(em: EntityManager): TransactionContext {
  * novo, sem transação) para consultas puras.
  */
 export class MikroOrmUnitOfWork implements UnitOfWork {
-  constructor(private readonly orm: MikroORM) {}
+  constructor(
+    private readonly orm: MikroORM,
+    private readonly metrics: MetricsPort,
+  ) {}
 
   async run<T>(work: (tx: TransactionContext) => Promise<T>): Promise<T> {
-    return this.orm.em.transactional((em) => work(createTransactionContext(em as EntityManager)));
+    return this.orm.em.transactional((em) =>
+      work(createTransactionContext(em as EntityManager, this.metrics)),
+    );
   }
 
   async read<T>(work: (tx: TransactionContext) => Promise<T>): Promise<T> {
-    return work(createTransactionContext(this.orm.em.fork()));
+    return work(createTransactionContext(this.orm.em.fork(), this.metrics));
   }
 }

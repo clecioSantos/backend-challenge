@@ -45,6 +45,7 @@ describe('reconciliation', () => {
       .getConnection()
       .execute(`update "wallets" set "balance" = 50.00 where "id" = ?`, [walletId]);
 
+    const divergencesBefore = h.metrics.reconciliationDivergences.length;
     const result = await h.reconcile.execute(walletId);
 
     expect(result.consistent).toBe(false);
@@ -52,7 +53,10 @@ describe('reconciliation', () => {
     expect(result.calculatedBalance.toString()).toBe('100.00');
     expect(result.difference.toString()).toBe('-50.00');
 
-    // A divergência não é corrigida silenciosamente.
+    // A divergência é contabilizada em métrica (mesma moeda) e não corrigida.
+    expect(h.metrics.reconciliationDivergences.length).toBe(divergencesBefore + 1);
+    expect(h.metrics.reconciliationDivergences.at(-1)).toBe('BRL');
+
     const after = await h.reconcile.execute(walletId);
     expect(after.consistent).toBe(false);
     expect(after.storedBalance.toString()).toBe('50.00');

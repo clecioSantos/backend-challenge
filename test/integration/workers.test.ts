@@ -1,26 +1,17 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'bun:test';
 import { Logger } from '@nestjs/common';
 import type { MessagePublisher, PublishableMessage } from '../../src/application/ports/message-publisher.port';
-import type { MetricsPort } from '../../src/application/ports/metrics.port';
 import { ProcessWagerTransactionUseCase } from '../../src/application/use-cases/process-wager-transaction.use-case';
 import { OutboxPublisherWorker } from '../../src/infrastructure/workers/outbox-publisher.worker';
 import { PendingReferenceWorker } from '../../src/infrastructure/workers/pending-reference.worker';
 import { createHarness, wagerCommand, type Harness } from '../support/harness';
+import { noopMetrics } from '../support/metrics';
 
 Logger.overrideLogger([]);
 
 let h: Harness;
 
-const metrics: MetricsPort = {
-  recordTransaction: () => {},
-  recordDuplicate: () => {},
-  recordRetry: () => {},
-  recordLockConflict: () => {},
-  recordDeadLetter: () => {},
-  observeProcessingLatency: () => {},
-  setOutboxPending: () => {},
-  setOutboxLag: () => {},
-};
+const metrics = noopMetrics;
 
 class RecordingPublisher implements MessagePublisher {
   readonly published: PublishableMessage[] = [];
