@@ -59,7 +59,15 @@ export class PendingReferenceWorker implements OnModuleInit, OnModuleDestroy {
         }
       } catch (error) {
         this.logger.error(
-          { transactionId: transaction.id, err: error },
+          {
+            correlationId: `resume:${transaction.id}`,
+            messageId: null,
+            transactionId: transaction.id,
+            externalTransactionId: transaction.externalTransactionId,
+            walletId: transaction.walletId,
+            providerId: transaction.providerId,
+            err: error,
+          },
           'Failed to resume pending-reference transaction',
         );
       }

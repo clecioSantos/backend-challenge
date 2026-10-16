@@ -115,7 +115,12 @@ export class SqsConsumerService implements OnModuleInit, OnModuleDestroy {
     try {
       envelope = parseWagerTransactionRequested(message.Body ?? '');
     } catch (error) {
-      this.logger.warn({ messageId: message.MessageId, err: error }, 'Discarding malformed SQS message');
+      // Payload inválido: não é possível extrair os campos de negócio, então
+      // correlacionamos pelo id da mensagem.
+      this.logger.warn(
+        { correlationId: message.MessageId, messageId: message.MessageId, reason: 'invalid_payload', err: error },
+        'Discarding malformed SQS message',
+      );
       await this.deadLetter(message, receiveCount, 'invalid_payload');
       return;
     }
@@ -127,6 +132,14 @@ export class SqsConsumerService implements OnModuleInit, OnModuleDestroy {
         this.metrics.recordDuplicate('sqs');
       }
       this.metrics.observeProcessingLatency((Date.now() - startedAt) / 1_000);
+      this.logger.debug(
+        {
+          ...this.logContext(envelope, outcome.transactionId),
+          status: outcome.status,
+          idempotentReplay: outcome.idempotentReplay,
+        },
+        'Wager transaction processed',
+      );
       await this.ack(message);
     } catch (error) {
       await this.handleFailure(message, envelope, receiveCount, error);
@@ -139,7 +152,7 @@ export class SqsConsumerService implements OnModuleInit, OnModuleDestroy {
     receiveCount: number,
     error: unknown,
   ): Promise<void> {
-    const context = { messageId: envelope.messageId, transaction: envelope.data.externalTransactionId };
+    const context = this.logContext(envelope);
 
     if (isDomainError(error)) {
       this.logger.warn({ ...context, code: error.code }, 'Rejecting poison message to DLQ');
@@ -168,6 +181,25 @@ export class SqsConsumerService implements OnModuleInit, OnModuleDestroy {
     await this.defer(message, delayMs);
   }
 
+  /**
+   * Campos mínimos de correlação exigidos para todo log do consumidor (seção 12):
+   * `correlationId`, `messageId`, `transactionId`, `walletId` e `providerId`.
+   * `transactionId` é o id interno quando conhecido (pós-processamento).
+   */
+  private logContext(
+    envelope: WagerTransactionRequestedEnvelope,
+    transactionId: string | null = null,
+  ): Record<string, unknown> {
+    return {
+      correlationId: envelope.messageId,
+      messageId: envelope.messageId,
+      transactionId,
+      externalTransactionId: envelope.data.externalTransactionId,
+      walletId: envelope.data.walletId,
+      providerId: envelope.data.providerId,
+    };
+  }
+
   private async ack(message: Message): Promise<void> {
     if (!message.ReceiptHandle) {
       return;
@@ -190,7 +222,10 @@ export class SqsConsumerService implements OnModuleInit, OnModuleDestroy {
         }),
       );
     } catch (error) {
-      this.logger.error({ err: error }, 'Failed to defer message visibility');
+      this.logger.error(
+        { correlationId: message.MessageId, messageId: message.MessageId, err: error },
+        'Failed to defer message visibility',
+      );
     }
   }
 
@@ -218,7 +253,10 @@ export class SqsConsumerService implements OnModuleInit, OnModuleDestroy {
     } catch (error) {
       // Se a escrita na DLQ falhar, mantém a mensagem para que a redrive policy
       // ainda tenha a chance de movê-la em vez de descartá-la silenciosamente.
-      this.logger.error({ err: error }, 'Failed to route message to DLQ');
+      this.logger.error(
+        { correlationId: message.MessageId, messageId: message.MessageId, reason, err: error },
+        'Failed to route message to DLQ',
+      );
     }
   }
 

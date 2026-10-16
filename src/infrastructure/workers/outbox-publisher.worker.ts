@@ -3,6 +3,7 @@ import type { MessagePublisher } from '../../application/ports/message-publisher
 import type { MetricsPort } from '../../application/ports/metrics.port';
 import { MESSAGE_PUBLISHER, METRICS, UNIT_OF_WORK } from '../../application/ports/tokens';
 import type { UnitOfWork } from '../../application/ports/unit-of-work.port';
+import type { OutboxMessage } from '../../domain/outbox/outbox-message';
 import type { AppConfig } from '../../config/env';
 import { APP_CONFIG } from '../config/app-config.provider';
 import { startIntervalLoop, type IntervalLoop } from './interval-loop';
@@ -71,7 +72,7 @@ export class OutboxPublisherWorker implements OnModuleInit, OnModuleDestroy {
           this.metrics.recordRetry('outbox');
           if (attempt >= this.config.maxAttempts) {
             this.logger.error(
-              { eventId: message.id, attempts: message.attempts, err: error },
+              { ...this.eventContext(message), attempts: message.attempts, err: error },
               'Outbox message exceeded max attempts; will keep retrying with capped backoff',
             );
           }
@@ -85,6 +86,31 @@ export class OutboxPublisherWorker implements OnModuleInit, OnModuleDestroy {
     }
 
     await this.refreshLag();
+  }
+
+  /**
+   * Contexto estruturado de um evento de outbox. Os campos de negócio
+   * (`transactionId`, `walletId`, `providerId`) vêm do envelope do evento; a
+   * mensagem em si tem `eventId`/`aggregateId`/`eventType` e o `correlationId`
+   * propagado desde a requisição original.
+   */
+  private eventContext(message: OutboxMessage): Record<string, unknown> {
+    const envelope = message.payload as {
+      correlationId?: unknown;
+      data?: Record<string, unknown>;
+    };
+    const data = envelope.data ?? {};
+
+    return {
+      correlationId: (envelope.correlationId as string) ?? message.id,
+      messageId: null,
+      transactionId: (data.transactionId as string) ?? message.aggregateId,
+      walletId: (data.walletId as string) ?? null,
+      providerId: (data.providerId as string) ?? null,
+      eventId: message.id,
+      eventType: message.eventType,
+      aggregateId: message.aggregateId,
+    };
   }
 
   private async refreshLag(): Promise<void> {
