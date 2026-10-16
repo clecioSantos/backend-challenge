@@ -1,11 +1,5 @@
-function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-}
-
 export interface IntervalLoop {
-  /** Para de agendar novas execuções e resolve quando a execução atual terminar. */
+  /** Para de agendar novas execuções e resolve assim que a execução em andamento terminar. */
   stop(): Promise<void>;
 }
 
@@ -16,26 +10,38 @@ export interface IntervalLoopOptions {
 }
 
 /**
- * Pequeno agendador cooperativo para workers em background. Executa `task` a
- * cada `intervalMs`, nunca sobrepondo duas execuções, e para de forma limpa
- * dentro de um intervalo para que o shutdown não trave.
+ * Pequeno agendador cooperativo para workers em background. Executa `run` a cada
+ * `intervalMs`, nunca sobrepõe duas execuções e para de forma limpa.
+ *
+ * `stop()` cancela o timer pendente e aguarda apenas a execução em andamento —
+ * não o intervalo restante —, para que o shutdown não dependa do tamanho do
+ * intervalo configurado.
  */
 export function startIntervalLoop(options: IntervalLoopOptions): IntervalLoop {
   let running = true;
-  let pending: Promise<void> = Promise.resolve();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let inFlight: Promise<void> = Promise.resolve();
 
   const schedule = (): void => {
-    pending = delay(options.intervalMs).then(async () => {
+    if (!running) {
+      return;
+    }
+
+    timer = setTimeout(() => {
       if (!running) {
         return;
       }
-      try {
-        await options.run();
-      } catch (error) {
-        options.onError(error);
-      }
-      schedule();
-    });
+
+      inFlight = (async () => {
+        try {
+          await options.run();
+        } catch (error) {
+          options.onError(error);
+        }
+      })();
+
+      void inFlight.then(() => schedule());
+    }, options.intervalMs);
   };
 
   schedule();
@@ -43,7 +49,11 @@ export function startIntervalLoop(options: IntervalLoopOptions): IntervalLoop {
   return {
     async stop(): Promise<void> {
       running = false;
-      await pending;
+      if (timer !== undefined) {
+        clearTimeout(timer);
+        timer = undefined;
+      }
+      await inFlight;
     },
   };
 }
