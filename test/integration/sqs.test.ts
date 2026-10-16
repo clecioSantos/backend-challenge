@@ -1,9 +1,14 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'bun:test';
+import { Logger } from '@nestjs/common';
 import { GetQueueAttributesCommand, PurgeQueueCommand, SQSClient } from '@aws-sdk/client-sqs';
 import type { MetricsPort } from '../../src/application/ports/metrics.port';
 import { SqsConsumerService } from '../../src/infrastructure/messaging/sqs-consumer.service';
 import { SqsMessagePublisher } from '../../src/infrastructure/messaging/sqs-message-publisher';
 import { createHarness, type Harness } from '../support/harness';
+
+// O segundo teste envia de propósito um payload inválido; silenciamos o logger
+// para que o WARN esperado do consumidor não polua a saída da suíte.
+Logger.overrideLogger([]);
 
 let h: Harness;
 let client: SQSClient;
