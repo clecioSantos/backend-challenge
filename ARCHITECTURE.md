@@ -73,7 +73,9 @@ O banco impõe o que o código promete:
 | saldo não negativo | check `wallets_balance_non_negative` |
 | uma entrada de ledger por `(transaction, wallet)` | índice único `wallet_ledger_entries_transaction_wallet_uq` |
 | aritmética de ledger não negativa | checks em `balance_before`/`balance_after` |
+| aritmética exata do lançamento | check `wallet_ledger_entries_arithmetic_check` (`balance_before ± amount = balance_after`) |
 | ledger append-only | trigger `wallet_ledger_entries_no_mutation` |
+| sem reversão dupla da mesma referência pelo mesmo tipo | índice único parcial `wager_transactions_reversal_uq` (`reference_transaction_id`,`kind` onde `status='PROCESSED'`) |
 | idempotency key e transação do provedor únicas | índices únicos em `wager_transactions` |
 
 ## 5. Concorrência
@@ -221,22 +223,29 @@ provedor que elas carregam ainda está sujeita a todas as validações de domín
 ## 13. Observabilidade
 
 - Logs JSON estruturados via `nestjs-pino`, com request correlation ids e
-  redação de headers de autorização e payloads financeiros.
+  redação de headers de autorização e payloads financeiros. Os logs do
+  consumidor SQS e dos workers carregam de forma consistente `correlationId`,
+  `messageId`, `transactionId`, `walletId` e `providerId`.
 - Métricas Prometheus (`GET /metrics`): transações por status, duplicados,
-  retries, conflitos de lock, mensagens em DLQ, histograma de latência de
-  processamento, gauges de outbox pendente e outbox lag.
+  retries, conflitos de lock (`wagering_lock_conflicts_total`, emitido pelo
+  repositório quando a checagem otimista falha), mensagens em DLQ, histograma de
+  latência de processamento, gauges de outbox pendente/outbox lag e
+  `wagering_reconciliation_divergences_total` (divergências de reconciliação).
 - `GET /health/live` (processo) e `GET /health/ready` (PostgreSQL + SQS).
+- Divergências de reconciliação não são corrigidas silenciosamente: aparecem na
+  resposta, na métrica e em log estruturado.
 
 ## 14. Testes
 
 - **Unit** (sem containers): `Money` (escala, arredondamento, entradas
   inválidas), invariantes de `Wallet`, verificação de saldo do ledger, máquina de
   estados da transação e regras de tipo.
-- **Integration** (PostgreSQL real + LocalStack real): migrations/constraints,
-  o ciclo de vida completo da aposta, referências, reentrega do inbox e
-  concorrência, atomicidade da unit of work, particionamento do outbox entre
-  publicadores concorrentes e o consumidor SQS de ponta a ponta (incluindo
-  roteamento para DLQ).
+- **Integration** (PostgreSQL real + LocalStack real): migrations/constraints
+  (unicidade, checks, trigger append-only, índice de reversão e `up`/`down` das
+  migrations), o ciclo de vida completo da aposta, referências, reentrega do
+  inbox e concorrência, atomicidade da unit of work, particionamento do outbox
+  entre publicadores concorrentes, retry/backoff e DLQ, e o consumidor SQS de
+  ponta a ponta.
 - **Concurrency** (transações reais em paralelo): o cenário da seção 8, a mesma
   aposta entregue 50 vezes em paralelo, wallets distintas em paralelo e três
   instâncias concorrentes da aplicação. Todo teste verifica o invariante final de
