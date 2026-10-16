@@ -203,7 +203,10 @@ export class SqsConsumerService implements OnModuleInit, OnModuleDestroy {
         new SendMessageCommand({
           QueueUrl: this.config.dlqUrl,
           MessageBody: message.Body ?? '{}',
-          MessageGroupId: 'dlq',
+          // Cada mensagem da DLQ vai em seu próprio group id: a DLQ não precisa
+          // de ordenação e assim uma mensagem não bloqueia a entrega das demais
+          // (head-of-line blocking de FIFO).
+          MessageGroupId: message.MessageId ?? `dlq-${Date.now()}`,
           MessageDeduplicationId: `${message.MessageId ?? Date.now()}:${receiveCount}`,
           MessageAttributes: {
             reason: { DataType: 'String', StringValue: reason },
