@@ -35,6 +35,7 @@ const envSchema = z.object({
 
   SQS_QUEUE_URL: z.string().default('http://localhost:4566/000000000000/wager-transactions.fifo'),
   SQS_DLQ_URL: z.string().default('http://localhost:4566/000000000000/wager-transactions-dlq.fifo'),
+  SQS_EVENTS_QUEUE_URL: z.string().default('http://localhost:4566/000000000000/wager-events.fifo'),
   SQS_CONSUMER_NAME: z.string().default('wager-transactions-consumer'),
   SQS_WAIT_TIME_SECONDS: z.coerce.number().int().min(0).max(20).default(20),
   SQS_VISIBILITY_TIMEOUT_SECONDS: z.coerce.number().int().positive().default(30),
@@ -73,6 +74,7 @@ export interface SqsConfig {
   secretAccessKey: string;
   queueUrl: string;
   dlqUrl: string;
+  eventsQueueUrl: string;
   consumerName: string;
   waitTimeSeconds: number;
   visibilityTimeoutSeconds: number;
@@ -135,6 +137,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
       secretAccessKey: parsed.AWS_SECRET_ACCESS_KEY,
       queueUrl: parsed.SQS_QUEUE_URL,
       dlqUrl: parsed.SQS_DLQ_URL,
+      eventsQueueUrl: parsed.SQS_EVENTS_QUEUE_URL,
       consumerName: parsed.SQS_CONSUMER_NAME,
       waitTimeSeconds: parsed.SQS_WAIT_TIME_SECONDS,
       visibilityTimeoutSeconds: parsed.SQS_VISIBILITY_TIMEOUT_SECONDS,

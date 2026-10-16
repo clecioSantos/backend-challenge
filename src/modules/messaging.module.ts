@@ -16,7 +16,9 @@ import { WageringModule } from './wagering.module';
       provide: MESSAGE_PUBLISHER,
       inject: [SQS_CLIENT, APP_CONFIG],
       useFactory: (client: SQSClient, config: AppConfig) =>
-        new SqsMessagePublisher(client, config.sqs.queueUrl),
+        // Os eventos do outbox vão para uma fila dedicada (`wager-events.fifo`),
+        // nunca para a fila de requisições que o próprio consumidor lê.
+        new SqsMessagePublisher(client, config.sqs.eventsQueueUrl),
     },
     SqsConsumerService,
   ],

@@ -15,12 +15,21 @@ REGION="${AWS_DEFAULT_REGION:-us-east-1}"
 ACCOUNT_ID="000000000000"
 MAIN_QUEUE="wager-transactions.fifo"
 DLQ="wager-transactions-dlq.fifo"
+EVENTS_QUEUE="wager-events.fifo"
 DLQ_ARN="arn:aws:sqs:${REGION}:${ACCOUNT_ID}:${DLQ}"
 
 echo "[localstack-init] provisioning SQS queues in region ${REGION}"
 
 awslocal sqs create-queue \
   --queue-name "${DLQ}" \
+  --attributes '{"FifoQueue":"true","ContentBasedDeduplication":"false"}' \
+  >/dev/null
+
+# Fila dedicada aos eventos de integração publicados pelo outbox. Fica separada
+# da fila de requisições para que o consumidor nunca trate um evento como uma
+# nova operação de aposta.
+awslocal sqs create-queue \
+  --queue-name "${EVENTS_QUEUE}" \
   --attributes '{"FifoQueue":"true","ContentBasedDeduplication":"false"}' \
   >/dev/null
 
