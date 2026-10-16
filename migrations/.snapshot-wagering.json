@@ -504,7 +504,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
-          "unique": false,
+          "unique": true,
           "length": null,
           "precision": null,
           "scale": null,
@@ -702,6 +702,18 @@
           "keyName": "wager_transactions_reference_transaction_id_idx",
           "unique": false,
           "primary": false
+        },
+        {
+          "columnNames": [
+            "reference_transaction_id",
+            "kind"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "wager_transactions_reversal_uq",
+          "unique": true,
+          "primary": false,
+          "expression": "CREATE UNIQUE INDEX wager_transactions_reversal_uq ON public.wager_transactions USING btree (reference_transaction_id, kind) WHERE ((reference_transaction_id IS NOT NULL) AND ((status)::text = 'PROCESSED'::text))"
         },
         {
           "columnNames": [
@@ -946,6 +958,12 @@
           "columnName": "amount",
           "definition": "CHECK ((amount > (0)::numeric))",
           "expression": "amount > 0"
+        },
+        {
+          "name": "wallet_ledger_entries_arithmetic_check",
+          "columnName": "amount",
+          "definition": "CHECK (((((direction)::text = 'DEBIT'::text) AND ((balance_before - amount) = balance_after)) OR (((direction)::text = 'CREDIT'::text) AND ((balance_before + amount) = balance_after))))",
+          "expression": "((direction = 'DEBIT'::text) AND (balance_before - amount) = balance_after)) OR (((direction = 'CREDIT'::text) AND ((balance_before + amount) = balance_after))"
         },
         {
           "name": "wallet_ledger_entries_balance_after_non_negative",

@@ -10,6 +10,11 @@ import type { LedgerDirection } from '../../../domain/wallet/ledger-direction';
   name: 'wallet_ledger_entries_direction_valid',
   expression: "direction IN ('DEBIT','CREDIT')",
 })
+@Check({
+  name: 'wallet_ledger_entries_arithmetic_check',
+  expression:
+    "(direction = 'DEBIT' AND balance_before - amount = balance_after) OR (direction = 'CREDIT' AND balance_before + amount = balance_after)",
+})
 export class WalletLedgerEntryEntity {
   @PrimaryKey({ type: 'uuid', fieldName: 'id' })
   id!: string;
