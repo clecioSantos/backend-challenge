@@ -258,6 +258,43 @@ describe('reversals and references', () => {
     );
     expect(balanceEvents[0]!.count).toBe('1'); // apenas o crédito de OPENING
   });
+
+  it('rejeita uma referência pendente após esgotar as tentativas e registra o evento de rejeição', async () => {
+    const { walletId, playerId } = await openWallet('100.00');
+
+    const pending = await h.processWagerTransaction.execute(
+      wagerCommand(walletId, playerId, 'ROLLBACK', '10.00', {
+        externalTransactionId: 'rollback-never',
+        referenceExternalTransactionId: 'missing-win',
+      }),
+    );
+    expect(pending.outcome).toBe('pending_reference');
+    if (pending.outcome !== 'pending_reference') {
+      throw new Error('expected a pending reference');
+    }
+
+    let outcome = 'pending';
+    for (let attempt = 0; attempt < 20 && outcome !== 'rejected'; attempt += 1) {
+      outcome = await h.processWagerTransaction.resume(pending.transactionId);
+    }
+    expect(outcome).toBe('rejected');
+
+    const rows = await h.orm.em.getConnection().execute<{ status: string; failure_code: string }[]>(
+      `select "status", "failure_code" from "wager_transactions" where "id" = ?`,
+      [pending.transactionId],
+    );
+    expect(rows[0]!.status).toBe('REJECTED');
+    expect(rows[0]!.failure_code).toBe(FailureCode.ReferenceNotFound);
+
+    const events = await h.orm.em.getConnection().execute<{ count: string }[]>(
+      `select count(*)::text as count from "outbox_messages"
+        where "event_type" = 'WagerTransactionRejected'`,
+    );
+    expect(events[0]!.count).toBe('1');
+
+    const reconciliation = await h.reconcile.execute(walletId);
+    expect(reconciliation.checkedEntries).toBe(1); // só o OPENING; rejeição não gera lançamento
+  });
 });
 
 describe('internal kinds', () => {
