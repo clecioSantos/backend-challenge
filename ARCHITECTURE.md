@@ -150,6 +150,10 @@ entrada da fila), a linha da transação e os eventos do outbox são gravados em
   publish deixa a linha pendente para o próximo tick. Um publish que tem sucesso
   mas cujo commit falha é retentado e é seguro porque os consumidores
   deduplicam.
+- **Os eventos do outbox vão para uma fila dedicada (`wager-events.fifo`)**,
+  nunca para a fila de requisições. Se fossem para a fila de entrada, o próprio
+  consumidor reinterpretaria um `WagerTransactionProcessed` como uma nova
+  `WagerTransactionRequested`. As duas filas são separadas por contrato.
 - Nenhum evento é publicado antes de a transação financeira fazer commit.
 
 As chamadas de repositório que devem ser transacionais usam
@@ -159,10 +163,11 @@ transação.
 
 ## 9. Mensageria (SQS)
 
-- As filas são FIFO (`wager-transactions.fifo`, `wager-transactions-dlq.fifo`)
-  para ordenação otimista e agrupamento por aggregate (`aggregateId` = message
-  group id, event id = deduplication id). O FIFO é tratado apenas como uma
-  otimização — a correção repousa sobre o banco.
+- As filas são FIFO — `wager-transactions.fifo` (ingress de requisições),
+  `wager-transactions-dlq.fifo` (mensagens envenenadas) e `wager-events.fifo`
+  (eventos do outbox) — para ordenação otimista e agrupamento por aggregate
+  (`aggregateId` = message group id, event id = deduplication id). O FIFO é
+  tratado apenas como uma otimização — a correção repousa sobre o banco.
 - O consumidor reutiliza exatamente o mesmo use case do HTTP. Ele faz ack
   (`DeleteMessage`) somente após o commit.
 - Classificação de falhas:
@@ -172,9 +177,14 @@ transação.
     controlado por `SQS_MAX_RECEIVE_COUNT`; a broker redrive policy é o último
     recurso;
   - payloads malformados → DLQ imediatamente.
+- Cada mensagem enviada à DLQ usa um message group id próprio: a DLQ não precisa
+  de ordenação, e assim uma mensagem não bloqueia a entrega das demais
+  (*head-of-line blocking* de FIFO).
 - No `SIGTERM`, o loop para de agendar novos polls e termina o lote em trânsito;
   qualquer coisa não confirmada com ack torna-se visível novamente e é
-  reentregue.
+  reentregue. O `stop()` do agendador cancela o timer pendente e aguarda apenas a
+  execução em andamento, para que o shutdown não dependa do intervalo
+  configurado.
 
 ## 10. Taxonomia de falhas
 
